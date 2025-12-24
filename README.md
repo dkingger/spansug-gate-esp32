@@ -60,8 +60,8 @@ Skriv ét tegn ad gangen og tryk Enter:
 | `c` | Gå til CLOSE-position |
 | `+` | Øg OPEN-vinkel |
 | `-` | Sænk OPEN-vinkel |
-| `]` | Øg CLOSE-vinkel |
-| `[` | Sænk CLOSE-vinkel |
+| `,` | Øg CLOSE-vinkel |
+| `.` | Sænk CLOSE-vinkel |
 | `p` | Print aktuelle værdier |
 
 Kalibrér indtil:
@@ -101,3 +101,4 @@ Denne kode bruges som grundlag for næste version, hvor ESP32’en:
 
 FabLab Spinderihallerne  
 Vejle
+
