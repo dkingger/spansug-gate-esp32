@@ -57,7 +57,8 @@
                 "d5f604fa41e8fc77"
             ],
             [
-                "3ac551b231bdab1f"
+                "26c6bdc217ef1450",
+                "6983d3b613c914bf"
             ]
         ]
     },
@@ -109,11 +110,12 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 660,
+        "x": 1180,
         "y": 340,
         "wires": [
             [
-                "6983d3b613c914bf"
+                "8b2dc820246b197d",
+                "390d6f99610e0e9e"
             ]
         ]
     },
@@ -134,8 +136,8 @@
         "topic": "",
         "payload": "10",
         "payloadType": "num",
-        "x": 690,
-        "y": 520,
+        "x": 210,
+        "y": 140,
         "wires": [
             [
                 "462b0a3a54e53bc3"
@@ -161,8 +163,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 920,
-        "y": 520,
+        "x": 440,
+        "y": 140,
         "wires": [
             []
         ]
@@ -204,12 +206,11 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1080,
+        "x": 1040,
         "y": 340,
         "wires": [
             [
-                "8b2dc820246b197d",
-                "390d6f99610e0e9e"
+                "3ac551b231bdab1f"
             ]
         ]
     },
@@ -227,7 +228,7 @@
         "correl": "",
         "expiry": "",
         "broker": "675a7eb26a300987",
-        "x": 1310,
+        "x": 1410,
         "y": 340,
         "wires": []
     },
@@ -288,8 +289,8 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1240,
-        "y": 200,
+        "x": 1340,
+        "y": 260,
         "wires": []
     },
     {
@@ -306,6 +307,68 @@
         "statusType": "auto",
         "x": 860,
         "y": 140,
+        "wires": []
+    },
+    {
+        "id": "26c6bdc217ef1450",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 440,
+        "wires": [
+            [
+                "f943f04bee6c57fb",
+                "94504376af99f9d8"
+            ]
+        ]
+    },
+    {
+        "id": "f943f04bee6c57fb",
+        "type": "mqtt out",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "topic": "spansug/gate/rondelsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "94504376af99f9d8",
+        "type": "debug",
+        "z": "d538fa3b378701c5",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 500,
         "wires": []
     },
     {
