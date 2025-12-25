@@ -30,6 +30,15 @@ Firmwaren kører på en **ESP32-C3 SuperMini** og bruges til at:
 
 *(Kan ændres i koden)*
 
+## Tilslutning (test-setup)
+
+Nedenstående diagram viser test-opstillingen med:
+- ESP32-C3 SuperMini  
+- Servo til spjæld  
+- WS2812B status-LED  
+
+![Test setup – servo og WS2812B](images/TestsSetupConnections.png)
+
 ---
 
 ## LED-status
@@ -72,10 +81,8 @@ Kalibrér indtil:
 
 ## Vigtige noter
 
-- **Forsyn aldrig servoen fra ESP32’ens 5V / 3V3**
 - Brug altid **fælles GND**
 - Hvis servoen “brummer” i endestop → justér 2–5 grader tilbage
-- WS2812B virker ofte med 3.3V data, men kan kræve level shifting i støjfyldt miljø
 
 ---
 
@@ -101,4 +108,5 @@ Denne kode bruges som grundlag for næste version, hvor ESP32’en:
 
 FabLab Spinderihallerne  
 Vejle
+
 
