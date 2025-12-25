@@ -1,117 +1,163 @@
-# Spånsug – ESP32-C3 Gate Controller (Kalibrering)
+# Spånsug – Gate Controller (ESP32-C3 + MQTT)
 
-Dette projekt er en **kalibrerings- og test-firmware** til et motorstyret spjæld
-(brugt i spånsug-systemet i FabLab Spinderihallerne).
+Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-Firmwaren kører på en **ESP32-C3 SuperMini** og bruges til at:
-
-- Kalibrere **servo-positioner** (OPEN / CLOSE)
-- Give **visuel status** via en WS2812B LED
-- Forberede hardware inden MQTT / backend-logik tilkobles
-
-> ⚠️ Denne version indeholder **ingen MQTT endnu**  
-> Den er udelukkende til **mekanisk og elektrisk kalibrering**.
+> 🔧 **Kalibrering:**
+> Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`Calibration/`** og har sin egen `README.md`.
 
 ---
 
-## Hardware
+## Overordnet arkitektur
 
-- ESP32-C3 SuperMini
-- Servo (MG996R / MG966R el.lign.)
-- 1× WS2812B (NeoPixel)
-- Ekstern 5–6 V strømforsyning til servo
-- Fælles GND mellem ESP32 og servo/LED
+```
+[ Maskine ]
+    │
+    ▼
+[ ESP32-C3 gate ]  --MQTT-->  [ Raspberry Pi ]
+    ▲                               │
+    └-----------MQTT cmd------------┘
+
+Raspberry Pi:
+- Mosquitto (MQTT broker)
+- Node-RED (logik + efterløbstid)
+```
+
+**Princip:**
+
+* ESP32 er en simpel hardware-node (servo, LED, input)
+* Al beslutningslogik ligger i Node-RED
+
+---
+
+## Mappestruktur
+
+```
+/
+├── src/                # Aktiv ESP32 MQTT-firmware
+├── Calibration/        # Kalibreringskode (egen README)
+├── images/             # Diagrammer og fotos
+├── node-red            # NodeRed flow (egen README)
+├── platformio.ini
+└── README.md           # (denne fil)
+```
+
+---
+
+## Hardware (ESP32 gate)
+
+* ESP32-C3 SuperMini
+* Servo (MG996R / MG966R eller tilsvarende)
+* 1× WS2812B (NeoPixel)
+* (Midlertidigt) afbryder eller senere CT clamp
+* Ekstern 5–6 V strømforsyning til servo
 
 ### Pinout (default)
-| Funktion | GPIO |
-|-------|------|
-| Servo signal | GPIO 3 |
-| WS2812B data | GPIO 2 |
 
-*(Kan ændres i koden)*
+| Funktion                       | GPIO |
+| ------------------------------ | ---: |
+| Servo signal                   |    3 |
+| WS2812B data                   |    2 |
+| Machine active (test/afbryder) |    4 |
 
-## Tilslutning (test-setup)
-
-Nedenstående diagram viser test-opstillingen med:
-- ESP32-C3 SuperMini  
-- Servo til spjæld  
-- WS2812B status-LED  
-
-![Test setup – servo og WS2812B](images/TestsSetupConnections.png)
+> ⚠️ Servo må **aldrig** forsynes fra ESP32. Brug ekstern 5–6 V og fælles GND.
 
 ---
 
-## LED-status
+## MQTT-konfiguration
 
-| Tilstand | LED |
-|--------|-----|
-| Spjæld åben | 🟢 Grøn |
-| Spjæld lukket | 🔴 Rød |
-| Ukendt / init | Slukket |
+### Topics (eksempel: `rondelsliber`)
 
----
+**ESP32 → backend**
 
-## Sådan bruges kalibreringskoden
+```
+spansug/gate/rondelsliber/machine_active
+```
 
-### 1. Flash firmwaren
-Brug **VS Code + PlatformIO** til at bygge og uploade projektet.
+Payload:
 
-### 2. Åbn Serial Monitor
-- Baud rate: **115200**
-- PlatformIO: `Ctrl + Alt + S`
+* `1` = maskinen kører
+* `0` = maskinen stoppet
 
-### 3. Tast kommandoer
-Skriv ét tegn ad gangen og tryk Enter:
+**Backend → ESP32**
 
-| Tast | Funktion |
-|----|---------|
-| `o` | Gå til OPEN-position |
-| `c` | Gå til CLOSE-position |
-| `+` | Øg OPEN-vinkel |
-| `-` | Sænk OPEN-vinkel |
-| `,` | Øg CLOSE-vinkel |
-| `.` | Sænk CLOSE-vinkel |
-| `p` | Print aktuelle værdier |
+```
+spansug/gate/rondelsliber/cmd
+```
 
-Kalibrér indtil:
-- Spjældet lukker helt tæt **uden at servoen presser**
-- Spjældet åbner helt **uden at ramme mekanisk stop**
+Payload:
+
+* `OPEN`
+* `CLOSE`
 
 ---
 
-## Vigtige noter
+## Manuel MQTT-test (køres på Raspberry Pi)
 
-- Brug altid **fælles GND**
-- Hvis servoen “brummer” i endestop → justér 2–5 grader tilbage
-- mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v (For at se hvad ESP32 sender)
-- mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN" (Kommando til manuel åbning)
-- mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE" (Kommando til manuel lukning)
+**Se al trafik for en gate:**
 
+```bash
+mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v
+```
 
----
+**Åbn spjæld manuelt:**
 
-## Projektstatus
+```bash
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN"
+```
 
-- [x] Servo-kalibrering
-- [x] Visuel status (WS2812B)
-- [ ] MQTT (OPEN / CLOSE kommandoer)
-- [ ] Machine_active input (strømsensor / afbryder)
-- [ ] Endelig gate-controller firmware
+**Luk spjæld manuelt:**
 
----
-
-## Næste skridt
-
-Denne kode bruges som grundlag for næste version, hvor ESP32’en:
-
-- Sender `machine_active` via MQTT
-- Modtager `OPEN` / `CLOSE` kommandoer fra backend
-- Indgår i et samlet spånsug-styringssystem
+```bash
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
+```
 
 ---
 
-FabLab Spinderihallerne  
-Vejle
+## Node-RED backend (kort)
 
+Node-RED kører på Raspberry Pi og fungerer som **styringslogik**.
 
+### Flow-princip
+
+1. `machine_active = 1`
+
+   * Send `OPEN` med det samme
+   * Annullér evt. planlagt lukning
+
+2. `machine_active = 0`
+
+   * Vent **N sekunder** (efterløbstid)
+   * Send `CLOSE`
+
+3. Starter maskinen igen inden N sekunder
+
+   * Lukning annulleres
+
+### Variabel
+
+* `flow.lukke_delay` – efterløbstid i **sekunder**
+
+---
+
+## Status
+
+* [x] MQTT-baseret gate-styring
+* [x] WS2812 status-LED
+* [x] Node-RED efterløbstid
+* [ ] CT clamp / strømsensor
+* [ ] Generisk gate-konfiguration
+* [ ] Master-logik for spånsuger
+
+---
+
+## Noter
+
+* Projektet er designet til **værkstedsbrug**
+* Robusthed prioriteres over kompleksitet
+* ESP32 holdes bevidst enkel
+* Al logik samles centralt i Node-RED
+
+---
+
+FabLab Spinderihallerne · Vejle
 
