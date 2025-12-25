@@ -2,7 +2,7 @@
 
 Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-> 🔧 **Kalibrering:**
+> 🔧 **Kalibrering**
 > Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`Calibration/`** og har sin egen `README.md`.
 
 ---
@@ -26,6 +26,7 @@ Raspberry Pi:
 
 * ESP32 er en simpel hardware-node (servo, LED, input)
 * Al beslutningslogik ligger i Node-RED
+* ESP32 viser kun status (LED) og udfører kommandoer
 
 ---
 
@@ -36,7 +37,7 @@ Raspberry Pi:
 ├── src/                # Aktiv ESP32 MQTT-firmware
 ├── Calibration/        # Kalibreringskode (egen README)
 ├── images/             # Diagrammer og fotos
-├── node-red            # NodeRed flow (egen README)
+├── node-red/           # Node-RED flow (egen README)
 ├── platformio.ini
 └── README.md           # (denne fil)
 ```
@@ -48,7 +49,7 @@ Raspberry Pi:
 * ESP32-C3 SuperMini
 * Servo (MG996R / MG966R eller tilsvarende)
 * 1× WS2812B (NeoPixel)
-* (Midlertidigt) afbryder eller senere CT clamp
+* (Midlertidigt) afbryder eller senere CT clamp / strømsensor
 * Ekstern 5–6 V strømforsyning til servo
 
 ### Pinout (default)
@@ -59,7 +60,21 @@ Raspberry Pi:
 | WS2812B data                   |    2 |
 | Machine active (test/afbryder) |    4 |
 
-> ⚠️ Servo må **aldrig** forsynes fra ESP32. Brug ekstern 5–6 V og fælles GND.
+> ⚠️ Servo må **aldrig** forsynes fra ESP32. Brug ekstern 5–6 V og **fælles GND**.
+
+---
+
+## LED-status (WS2812B)
+
+LED’en på hver gate giver visuel feedback direkte i værkstedet:
+
+| Tilstand             | Kommando | LED-adfærd       |
+| -------------------- | -------- | ---------------- |
+| Åben                 | `OPEN`   | Grøn (fast)      |
+| Ventefase / efterløb | `WAIT`   | Grøn (blinkende) |
+| Lukket               | `CLOSE`  | Rød (fast)       |
+
+Ventefasen bruges i perioden fra maskinen stopper, til spjældet faktisk lukkes.
 
 ---
 
@@ -86,8 +101,9 @@ spansug/gate/rondelsliber/cmd
 
 Payload:
 
-* `OPEN`
-* `CLOSE`
+* `OPEN`  – åbn spjæld
+* `WAIT`  – ventefase / efterløb (ingen servo-bevægelse)
+* `CLOSE` – luk spjæld
 
 ---
 
@@ -105,6 +121,12 @@ mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v
 mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN"
 ```
 
+**Sæt gate i ventefase (blink):**
+
+```bash
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "WAIT"
+```
+
 **Luk spjæld manuelt:**
 
 ```bash
@@ -115,22 +137,27 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 ## Node-RED backend (kort)
 
-Node-RED kører på Raspberry Pi og fungerer som **styringslogik**.
+Node-RED kører på Raspberry Pi og fungerer som **central styringslogik**.
 
 ### Flow-princip
 
-1. `machine_active = 1`
+1. **`machine_active = 1`**
 
    * Send `OPEN` med det samme
-   * Annullér evt. planlagt lukning
+   * Nulstil evt. aktiv lukke-timer
 
-2. `machine_active = 0`
+2. **`machine_active = 0`**
 
-   * Vent **N sekunder** (efterløbstid)
+   * Send `WAIT` med det samme
+   * Start efterløbstimer
+
+3. **Efter N sekunder**
+
    * Send `CLOSE`
 
-3. Starter maskinen igen inden N sekunder
+4. **Hvis maskinen starter igen inden N sekunder**
 
+   * Send `OPEN`
    * Lukning annulleres
 
 ### Variabel
@@ -143,6 +170,7 @@ Node-RED kører på Raspberry Pi og fungerer som **styringslogik**.
 
 * [x] MQTT-baseret gate-styring
 * [x] WS2812 status-LED
+* [x] Blinkende LED i ventefase (`WAIT`)
 * [x] Node-RED efterløbstid
 * [ ] CT clamp / strømsensor
 * [ ] Generisk gate-konfiguration
@@ -155,9 +183,8 @@ Node-RED kører på Raspberry Pi og fungerer som **styringslogik**.
 * Projektet er designet til **værkstedsbrug**
 * Robusthed prioriteres over kompleksitet
 * ESP32 holdes bevidst enkel
-* Al logik samles centralt i Node-RED
+* Al beslutningslogik samles centralt i Node-RED
 
 ---
 
 FabLab Spinderihallerne · Vejle
-
