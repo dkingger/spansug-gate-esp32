@@ -48,7 +48,7 @@ Systemet er opdelt i:
 
 Billedet ligger i repo’et:
 
-![Test setup – servo og WS2812B](images/TestsSetupConnections.png)
+![Test setup – servo og WS2812B](/images/TestsSetupConnections.png)
 
 ---
 
