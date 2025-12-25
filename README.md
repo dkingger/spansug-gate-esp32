@@ -36,6 +36,7 @@ Raspberry Pi:
 ├── src/                # Aktiv ESP32 MQTT-firmware
 ├── Calibration/        # Kalibreringskode (egen README)
 ├── images/             # Diagrammer og fotos
+├── node-red            # NodeRed flow (egen README)
 ├── platformio.ini
 └── README.md           # (denne fil)
 ```
@@ -159,3 +160,4 @@ Node-RED kører på Raspberry Pi og fungerer som **styringslogik**.
 ---
 
 FabLab Spinderihallerne · Vejle
+
