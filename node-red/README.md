@@ -1,11 +1,13 @@
 # Spånsug – Gate Controller (ESP32‑C3) + Node‑RED backend
 
-Dette repository dokumenterer og indeholder kode til et spjæld (gate) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
+Denne mappe indeholder **Node‑RED‑flowet**, som fungerer som den centrale styringslogik
+for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-Systemet er opdelt i:
+Flowet kommunikerer med ESP32‑C3‑baserede gates via **MQTT** og håndterer:
 
-* **ESP32‑C3 ved hver maskine**: styrer servo (spjæld) + WS2812B status‑LED og taler MQTT.
-* **Raspberry Pi**: kører **Mosquitto (MQTT broker)** + **Node‑RED**, som håndterer logik og efterløbstid.
+* åbning af spjæld
+* ventefase / efterløb
+* lukning af spjæld
 
 ---
 
@@ -19,148 +21,185 @@ Systemet er opdelt i:
     ▲                               │
     └----------MQTT cmd-------------┘
 ```
-![NodeRedFlow](/images/flow.png)
 
-**Princip:** ESP32 er “muskel + I/O”. Node‑RED er “hjernen”.
+![Node‑RED flow](../images/flow.png)
 
----
+**Princip:**
 
-## Hardware
-
-* ESP32‑C3 SuperMini
-* Servo: MG996R / MG966R (eller tilsvarende)
-* 1× WS2812B (NeoPixel)
-* (Midlertidigt) afbryder til test af `machine_active`
-* Ekstern 5–6 V strømforsyning til servo
-
-### Pinout (default i koden)
-
-| Funktion        | GPIO |
-| --------------- | ---: |
-| Servo signal    |    3 |
-| WS2812B data    |    2 |
-| Afbryder (test) |    4 |
-
-> **Vigtigt:** Servo må **ikke** forsynes fra ESP32. Brug ekstern 5–6 V og **fælles GND**.
-
----
-
-## Tilslutning (test-setup)
-
-Billedet ligger i repo’et:
-
-![Test setup – servo og WS2812B](/images/TestsSetupConnections.png)
-
----
-
-## LED-status (WS2812B)
-
-| Tilstand      | LED     |
-| ------------- | ------- |
-| Spjæld åben   | 🟢 Grøn |
-| Spjæld lukket | 🔴 Rød  |
-| Init/ukendt   | Slukket |
+* ESP32 er “muskel + I/O” (servo, LED, input)
+* Node‑RED er “hjernen” (logik, timing, koordinering)
 
 ---
 
 ## MQTT topics (eksempel: rondelsliber)
 
-**Fra ESP32 → backend**
+### Fra ESP32 → backend
 
-* Topic:
+**Topic**
 
-  ```
-  spansug/gate/rondelsliber/machine_active
-  ```
-* Payload:
+```
+spansug/gate/rondelsliber/machine_active
+```
 
-  * `1` = maskinen kører
-  * `0` = maskinen stoppet
+**Payload**
 
-**Fra backend → ESP32**
-
-* Topic:
-
-  ```
-  spansug/gate/rondelsliber/cmd
-  ```
-* Payload:
-
-  * `OPEN`
-  * `CLOSE`
+* `1` → maskinen kører
+* `0` → maskinen stoppet
 
 ---
 
-## Manuel MQTT-test (køres på Raspberry Pi)
+### Fra backend → ESP32
 
-**Se al trafik for en gate:**
+**Topic**
+
+```
+spansug/gate/rondelsliber/cmd
+```
+
+**Payload**
+
+* `OPEN`  – åbn spjæld (servo bevæger sig)
+* `WAIT`  – ventefase / efterløb (ingen servo, LED blinker grønt)
+* `CLOSE` – luk spjæld
+
+---
+
+## Node‑RED flow – funktionel beskrivelse
+
+Flowet reagerer udelukkende på ændringer i `machine_active`.
+
+### 1. Maskinen starter
+
+Når:
+
+```
+machine_active = 1
+```
+
+Node‑RED gør følgende:
+
+* sender `OPEN` **med det samme** til ESP32
+* nulstiller evt. aktiv lukke‑timer
+
+Resultat:
+
+* spjæld åbner
+* LED lyser **grønt (fast)**
+
+---
+
+### 2. Maskinen stopper (ventefase)
+
+Når:
+
+```
+machine_active = 0
+```
+
+Node‑RED gør følgende:
+
+1. sender `WAIT` **med det samme**
+2. starter en timer med efterløbstid
+
+Resultat:
+
+* spjæld forbliver åbent
+* LED **blinker grønt** under hele ventefasen
+
+---
+
+### 3. Efterløbstid udløber
+
+Når timeren udløber:
+
+* Node‑RED sender `CLOSE`
+
+Resultat:
+
+* spjæld lukker
+* LED lyser **rødt (fast)**
+
+---
+
+### 4. Maskinen starter igen før timeren udløber
+
+Hvis:
+
+```
+machine_active = 1
+```
+
+inden efterløbstiden er gået
+
+Node‑RED:
+
+* annullerer lukke‑timeren
+* sender `OPEN`
+
+Resultat:
+
+* spjæld forbliver åbent
+* ingen unødvendig åbne/lukke‑cyklus
+
+---
+
+## Variabler
+
+Flowet bruger følgende **flow‑variabel**:
+
+```
+flow.lukke_delay
+```
+
+* Enhed: **sekunder**
+* Bruges som efterløbstid
+* Kan ændres ét sted uden at ændre selve flow‑logikken
+
+---
+
+## Manuel MQTT‑test (køres på Raspberry Pi)
+
+**Se al trafik for en gate**
 
 ```bash
 mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v
 ```
 
-**Åbn spjæld manuelt:**
+**Send kommandoer manuelt**
 
 ```bash
+# Åbn
 mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN"
-```
 
-**Luk spjæld manuelt:**
+# Ventefase (blink)
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "WAIT"
 
-```bash
+# Luk
 mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 ```
 
 ---
 
-## Node‑RED flow (backend-logik)
-
-Node‑RED-flowet styrer, hvornår der sendes `OPEN`/`CLOSE` til ESP32.
-
-### Regler
-
-1. Når `machine_active = 1`
-
-* Send `OPEN` **med det samme**
-* Annullér evt. planlagt lukning
-
-2. Når `machine_active = 0`
-
-* Vent **N sekunder** (efterløbstid)
-* Send `CLOSE`
-
-3. Hvis maskinen starter igen inden N sekunder
-
-* Lukning annulleres (spjæld forbliver åbent)
-
-### Variabel
-
-Flowet bruger:
-
-* `flow.lukke_delay` (sekunder)
-
----
-
-## Import/Export af Node‑RED flow
+## Import / Export af Node‑RED flow
 
 ### Export (gem flow som fil)
 
-Node‑RED → menu (≡) → **Export** → vælg **Current flow** (eller Selected nodes) → **Download** (JSON).
+Node‑RED → menu (≡) → **Export** → vælg *Current flow* (eller *Selected nodes*) → **Download (JSON)**
 
 ### Import
 
-Node‑RED → menu (≡) → **Import** → vælg JSON‑fil → **Import** → **Deploy**.
+Node‑RED → menu (≡) → **Import** → vælg JSON‑fil → **Import** → **Deploy**
 
 ---
 
 ## Raspberry Pi / Mosquitto (LAN)
 
-MQTT broker lytter på LAN:
+MQTT broker kører på Raspberry Pi:
 
 * IP (eksempel): `192.168.87.133`
 * Port: `1883`
 
-Tjek på Pi:
+Tjek broker:
 
 ```bash
 sudo ss -lntp | grep 1883
@@ -170,13 +209,13 @@ sudo ss -lntp | grep 1883
 
 ## Status
 
-* [x] Servo‑kalibrering
-* [x] WS2812B status
-* [x] MQTT topics defineret
-* [x] Node‑RED efterløbslogik
-* [ ] CT clamp / strømsensor som `machine_active`
-* [ ] Fælles/generisk flow for alle gates
-* [ ] Master-logik for spånsuger (hvis ønsket)
+* [x] MQTT‑baseret gate‑styring
+* [x] OPEN / WAIT / CLOSE‑model
+* [x] Blinkende LED i ventefase
+* [x] Efterløbstid via Node‑RED
+* [ ] CT clamp / strømsensor
+* [ ] Generisk flow til alle gates
+* [ ] Master‑logik for spånsuger
 
 ---
 
