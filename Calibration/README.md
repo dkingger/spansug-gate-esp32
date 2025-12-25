@@ -37,7 +37,7 @@ Nedenstående diagram viser test-opstillingen med:
 - Servo til spjæld  
 - WS2812B status-LED  
 
-![Test setup – servo og WS2812B](images/TestsSetupConnections.png)
+![Test setup – servo og WS2812B](/images/TestsSetupConnections.png)
 
 ---
 
