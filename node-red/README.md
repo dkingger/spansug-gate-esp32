@@ -19,6 +19,7 @@ Systemet er opdelt i:
     ▲                               │
     └----------MQTT cmd-------------┘
 ```
+![NodeRedFlow](/images/flow.png)
 
 **Princip:** ESP32 er “muskel + I/O”. Node‑RED er “hjernen”.
 

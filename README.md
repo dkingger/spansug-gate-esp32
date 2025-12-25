@@ -188,3 +188,8 @@ Node-RED kører på Raspberry Pi og fungerer som **central styringslogik**.
 ---
 
 FabLab Spinderihallerne · Vejle
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 3fc1bcc96995d8eae903855c76485b7985579aee
