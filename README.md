@@ -83,6 +83,10 @@ Kalibrér indtil:
 
 - Brug altid **fælles GND**
 - Hvis servoen “brummer” i endestop → justér 2–5 grader tilbage
+- mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v (For at se hvad ESP32 sender)
+- mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN" (Kommando til manuel åbning)
+- mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE" (Kommando til manuel lukning)
+
 
 ---
 
@@ -108,5 +112,6 @@ Denne kode bruges som grundlag for næste version, hvor ESP32’en:
 
 FabLab Spinderihallerne  
 Vejle
+
 
 
