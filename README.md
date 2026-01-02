@@ -49,8 +49,9 @@ Raspberry Pi:
 * ESP32-C3 SuperMini
 * Servo (MG996R / MG966R eller tilsvarende)
 * 1× WS2812B (NeoPixel)
-* (Midlertidigt) afbryder eller senere CT clamp / strømsensor
-* Ekstern 5–6 V strømforsyning til servo
+* Strømsensor m. relæ udgang
+
+![Test setup – servo og WS2812B](/images/SetupConnections.png)
 
 ### Pinout (default)
 
@@ -58,9 +59,9 @@ Raspberry Pi:
 | ------------------------------ | ---: |
 | Servo signal                   |    3 |
 | WS2812B data                   |    2 |
-| Machine active (test/afbryder) |    4 |
+| Machine active                 |    4 |
 
-> ⚠️ Servo må **aldrig** forsynes fra ESP32. Brug ekstern 5–6 V og **fælles GND**.
+> ⚠️ Servo **fælles GND** med LED og relæ
 
 ---
 
@@ -71,10 +72,10 @@ LED’en på hver gate giver visuel feedback direkte i værkstedet:
 | Tilstand             | Kommando | LED-adfærd       |
 | -------------------- | -------- | ---------------- |
 | Åben                 | `OPEN`   | Grøn (fast)      |
-| Ventefase / efterløb | `WAIT`   | Grøn (blinkende) |
+| Efterløb             | `WAIT`   | Grøn (blinkende) |
 | Lukket               | `CLOSE`  | Rød (fast)       |
 
-Ventefasen bruges i perioden fra maskinen stopper, til spjældet faktisk lukkes.
+Efterløb er perioden fra maskinen stopper, til spjældet faktisk lukkes.
 
 ---
 
@@ -188,3 +189,4 @@ Node-RED kører på Raspberry Pi og fungerer som **central styringslogik**.
 ---
 
 FabLab Spinderihallerne · Vejle
+
