@@ -21,6 +21,10 @@ static const int PIXEL_PIN = 2;
 static const int PIXEL_COUNT = 1;
 Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
+// LED farver (brugervalgte, gemmes i NVS)
+static uint8_t OPEN_R = 0, OPEN_G = 180, OPEN_B = 0;    // grøn
+static uint8_t CLOSE_R = 180, CLOSE_G = 0, CLOSE_B = 0; // rød
+
 // Tilstand
 enum GateState { STATE_UNKNOWN, STATE_OPEN, STATE_CLOSED };
 GateState state = STATE_UNKNOWN;
@@ -34,6 +38,12 @@ static const char* NVS_NS    = "servo";
 static const char* KEY_OPEN  = "open_deg";
 static const char* KEY_CLOSE = "close_deg";
 static const char* KEY_STATE = "last_state"; // 0=unknown,1=open,2=closed
+static const char* KEY_OC_R  = "open_r";
+static const char* KEY_OC_G  = "open_g";
+static const char* KEY_OC_B  = "open_b";
+static const char* KEY_CC_R  = "close_r";
+static const char* KEY_CC_G  = "close_g";
+static const char* KEY_CC_B  = "close_b";
 
 // Serial log buffer (sidste 50 linjer)
 String logBuffer = "";
@@ -69,9 +79,17 @@ void saveNvsAll() {
   prefs.putInt(KEY_OPEN,  OPEN_DEG);
   prefs.putInt(KEY_CLOSE, CLOSE_DEG);
   prefs.putInt(KEY_STATE, stateToInt(state));
+  prefs.putUInt(KEY_OC_R, OPEN_R);
+  prefs.putUInt(KEY_OC_G, OPEN_G);
+  prefs.putUInt(KEY_OC_B, OPEN_B);
+  prefs.putUInt(KEY_CC_R, CLOSE_R);
+  prefs.putUInt(KEY_CC_G, CLOSE_G);
+  prefs.putUInt(KEY_CC_B, CLOSE_B);
   addLog("NVS save: open=" + String(OPEN_DEG) +
          " close=" + String(CLOSE_DEG) +
-         " state=" + String(stateToInt(state)));
+    " state=" + String(stateToInt(state)) +
+    " openRGB=" + String(OPEN_R) + "," + String(OPEN_G) + "," + String(OPEN_B) +
+    " closeRGB=" + String(CLOSE_R) + "," + String(CLOSE_G) + "," + String(CLOSE_B));
 }
 
 void loadNvsAll() {
@@ -79,22 +97,32 @@ void loadNvsAll() {
   CLOSE_DEG = prefs.getInt(KEY_CLOSE, CLOSE_DEG);
   state     = intToState(prefs.getInt(KEY_STATE, stateToInt(state)));
 
+   // farver (default grøn/rød)
+  OPEN_R  = prefs.getUInt(KEY_OC_R, OPEN_R);
+  OPEN_G  = prefs.getUInt(KEY_OC_G, OPEN_G);
+  OPEN_B  = prefs.getUInt(KEY_OC_B, OPEN_B);
+  CLOSE_R = prefs.getUInt(KEY_CC_R, CLOSE_R);
+  CLOSE_G = prefs.getUInt(KEY_CC_G, CLOSE_G);
+  CLOSE_B = prefs.getUInt(KEY_CC_B, CLOSE_B);
+
   // Sanity clamp
   OPEN_DEG  = constrain(OPEN_DEG, 0, 180);
   CLOSE_DEG = constrain(CLOSE_DEG, 0, 180);
 
   addLog("NVS load: open=" + String(OPEN_DEG) +
          " close=" + String(CLOSE_DEG) +
-         " state=" + String(stateToInt(state)));
+    " state=" + String(stateToInt(state)) +
+    " openRGB=" + String(OPEN_R) + "," + String(OPEN_G) + "," + String(OPEN_B) +
+    " closeRGB=" + String(CLOSE_R) + "," + String(CLOSE_G) + "," + String(CLOSE_B));
 }
 
 void setLedForState(GateState s) {
   if (s == STATE_OPEN) {
-    pixel.setPixelColor(0, pixel.Color(0, 100, 0));   // groen
-    addLog("LED: GROEN (AABEN)");
+    pixel.setPixelColor(0, pixel.Color(OPEN_R, OPEN_G, OPEN_B));
+    addLog("LED: AABEN (brugerfarve)");
   } else if (s == STATE_CLOSED) {
-    pixel.setPixelColor(0, pixel.Color(100, 0, 0));   // rod
-    addLog("LED: ROD (LUKKET)");
+    pixel.setPixelColor(0, pixel.Color(CLOSE_R, CLOSE_G, CLOSE_B));
+    addLog("LED: LUKKET (brugerfarve)");
   } else {
     pixel.setPixelColor(0, pixel.Color(0, 0, 0));     // sluk
     addLog("LED: SLUKKET (UKENDT)");
@@ -169,7 +197,17 @@ void setupWebServer() {
     }
     logJson += "]";
 
-    String json = "{\"state\":\"" + stateStr + "\",\"open_deg\":" + String(OPEN_DEG) + ",\"close_deg\":" + String(CLOSE_DEG) + ",\"log\":" + logJson + "}";
+    char openHex[8];
+    snprintf(openHex, sizeof(openHex), "%02X%02X%02X", OPEN_R, OPEN_G, OPEN_B);
+    char closeHex[8];
+    snprintf(closeHex, sizeof(closeHex), "%02X%02X%02X", CLOSE_R, CLOSE_G, CLOSE_B);
+
+    String json = "{\"state\":\"" + stateStr +
+                  "\",\"open_deg\":" + String(OPEN_DEG) +
+                  ",\"close_deg\":" + String(CLOSE_DEG) +
+                  ",\"open_color\":\"#" + String(openHex) + "\"" +
+                  ",\"close_color\":\"#" + String(closeHex) + "\"" +
+                  ",\"log\":" + logJson + "}";
     request->send(200, "application/json", json);
   });
 
@@ -210,8 +248,6 @@ void setupWebServer() {
       }
     }
 
-    if (changed) saveNvsAll();
-
     String stateStr = (state == STATE_OPEN) ? "AABEN" : (state == STATE_CLOSED) ? "LUKKET" : "UKENDT";
     String json = "{\"state\":\"" + stateStr + "\",\"open_deg\":" + String(OPEN_DEG) + ",\"close_deg\":" + String(CLOSE_DEG) + "}";
     request->send(200, "application/json", json);
@@ -242,11 +278,60 @@ void setupWebServer() {
       }
     }
 
-    if (changed) saveNvsAll();
+    if (request->hasParam("open_color")) {
+      String v = request->getParam("open_color")->value();
+      if (v.startsWith("#")) v.remove(0,1);
+      if (v.length() == 6) {
+        long rgb = strtol(v.c_str(), nullptr, 16);
+        uint8_t r = (rgb >> 16) & 0xFF;
+        uint8_t g = (rgb >> 8) & 0xFF;
+        uint8_t b = rgb & 0xFF;
+        if (r != OPEN_R || g != OPEN_G || b != OPEN_B) {
+          OPEN_R = r; OPEN_G = g; OPEN_B = b;
+          if (state == STATE_OPEN) setLedForState(state);
+          addLog("OPEN_COLOR=#" + v);
+          changed = true;
+        }
+      }
+    }
+
+    if (request->hasParam("close_color")) {
+      String v = request->getParam("close_color")->value();
+      if (v.startsWith("#")) v.remove(0,1);
+      if (v.length() == 6) {
+        long rgb = strtol(v.c_str(), nullptr, 16);
+        uint8_t r = (rgb >> 16) & 0xFF;
+        uint8_t g = (rgb >> 8) & 0xFF;
+        uint8_t b = rgb & 0xFF;
+        if (r != CLOSE_R || g != CLOSE_G || b != CLOSE_B) {
+          CLOSE_R = r; CLOSE_G = g; CLOSE_B = b;
+          if (state == STATE_CLOSED) setLedForState(state);
+          addLog("CLOSE_COLOR=#" + v);
+          changed = true;
+        }
+      }
+    }
 
     String stateStr = (state == STATE_OPEN) ? "AABEN" : (state == STATE_CLOSED) ? "LUKKET" : "UKENDT";
-    String json = "{\"state\":\"" + stateStr + "\",\"open_deg\":" + String(OPEN_DEG) + ",\"close_deg\":" + String(CLOSE_DEG) + "}";
+    char openHex[8];
+    snprintf(openHex, sizeof(openHex), "%02X%02X%02X", OPEN_R, OPEN_G, OPEN_B);
+    char closeHex[8];
+    snprintf(closeHex, sizeof(closeHex), "%02X%02X%02X", CLOSE_R, CLOSE_G, CLOSE_B);
+
+    String json = "{\"state\":\"" + stateStr + "\",\"open_deg\":" + String(OPEN_DEG) +
+                  ",\"close_deg\":" + String(CLOSE_DEG) +
+                  ",\"open_color\":\"#" + String(openHex) + "\"" +
+                  ",\"close_color\":\"#" + String(closeHex) + "\"" + "}";
     request->send(200, "application/json", json);
+  });
+
+  // Gem manuelt til NVS
+  server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request) {
+    saveNvsAll();
+    String stateStr = (state == STATE_OPEN) ? "AABEN" : (state == STATE_CLOSED) ? "LUKKET" : "UKENDT";
+    String json = "{\"ok\":true,\"state\":\"" + stateStr + "\",\"open_deg\":" + String(OPEN_DEG) + ",\"close_deg\":" + String(CLOSE_DEG) + "}";
+    request->send(200, "application/json", json);
+    addLog("NVS: gemt (open=" + String(OPEN_DEG) + ", close=" + String(CLOSE_DEG) + ")");
   });
 
   // Clear log endpoint

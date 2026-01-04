@@ -39,6 +39,14 @@ Nedenstående diagram viser test-opstillingen med:
 
 ![Test setup – servo og WS2812B](/images/TestsSetupConnections.png)
 
+![Webinterface – kalibrering](/images/webinterface.png)
+
+### Webinterface (kalibrering)
+
+- Juster `OPEN_DEG` og `CLOSE_DEG` direkte i felterne eller med +/- knapperne.
+- Vælg LED-farve for ÅBEN og LUKKET via farvevælgerne; farven opdateres straks på LED’en.
+- Tryk **“Gem til NVS”** for at gemme både vinkler og farver permanent i ESP32’ens flash (NVS).
+
 ---
 
 ## LED-status
@@ -48,6 +56,18 @@ Nedenstående diagram viser test-opstillingen med:
 | Spjæld åben | 🟢 Grøn |
 | Spjæld lukket | 🔴 Rød |
 | Ukendt / init | Slukket |
+
+---
+
+## NVS (Non-Volatile Storage)
+
+Kalibrerede værdier gemmes automatisk i ESP32'ens **NVS** (flash-hukommelse) og bevares ved genstart:
+
+- `OPEN_DEG` – åben position i grader (0–180)
+- `CLOSE_DEG` – lukket position i grader (0–180)
+- `last_state` – sidste kendte tilstand (åben/lukket)
+
+Værdierne gemmes automatisk når de ændres via webinterfacet, og indlæses automatisk ved opstart.
 
 ---
 

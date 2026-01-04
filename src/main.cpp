@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <ESP32Servo.h>
 #include <Adafruit_NeoPixel.h>
+#include <Preferences.h>
 
 // --------- USER CONFIG ----------
 static const char* WIFI_SSID = "newdahl";
@@ -27,6 +28,23 @@ static int OPEN_DEG  = 11;
 static int CLOSE_DEG = 105;
 // -------------------------------
 
+// NVS persistent storage
+Preferences prefs;
+static const char* NVS_NS    = "servo";
+static const char* KEY_OPEN  = "open_deg";
+static const char* KEY_CLOSE = "close_deg";
+static const char* KEY_STATE = "last_state"; // 0=unknown,1=open,2=wait,3=closed
+static const char* KEY_OC_R  = "open_r";
+static const char* KEY_OC_G  = "open_g";
+static const char* KEY_OC_B  = "open_b";
+static const char* KEY_CC_R  = "close_r";
+static const char* KEY_CC_G  = "close_g";
+static const char* KEY_CC_B  = "close_b";
+
+// LED colors (set via calibration, read-only here)
+static uint8_t OPEN_R = 0, OPEN_G = 180, OPEN_B = 0;
+static uint8_t CLOSE_R = 180, CLOSE_G = 0, CLOSE_B = 0;
+
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
@@ -48,6 +66,50 @@ static const uint32_t BLINK_INTERVAL_MS = 500; // justér hvis du vil
 uint32_t lastBlinkMs = 0;
 bool blinkOn = false;
 
+// --- NVS helpers ---
+static int stateToInt(GateState s) {
+  if (s == STATE_OPEN) return 1;
+  if (s == STATE_WAIT) return 2;
+  if (s == STATE_CLOSED) return 3;
+  return 0;
+}
+
+static GateState intToState(int v) {
+  if (v == 1) return STATE_OPEN;
+  if (v == 2) return STATE_WAIT;
+  if (v == 3) return STATE_CLOSED;
+  return STATE_UNKNOWN;
+}
+
+void saveState() {
+  // Gem kun tilstand, IKKE servo-grader (de sættes kun via kalibrering)
+  prefs.putInt(KEY_STATE, stateToInt(state));
+  Serial.println("NVS saved state=" + String(stateToInt(state)));
+}
+
+void loadNvsAll() {
+  // Indlæs servo-grader (sat via kalibrering) og sidste tilstand
+  OPEN_DEG  = prefs.getInt(KEY_OPEN,  OPEN_DEG);
+  CLOSE_DEG = prefs.getInt(KEY_CLOSE, CLOSE_DEG);
+  state     = intToState(prefs.getInt(KEY_STATE, stateToInt(state)));
+
+  // Indlæs LED-farver (sat via kalibrering)
+  OPEN_R  = prefs.getUInt(KEY_OC_R, OPEN_R);
+  OPEN_G  = prefs.getUInt(KEY_OC_G, OPEN_G);
+  OPEN_B  = prefs.getUInt(KEY_OC_B, OPEN_B);
+  CLOSE_R = prefs.getUInt(KEY_CC_R, CLOSE_R);
+  CLOSE_G = prefs.getUInt(KEY_CC_G, CLOSE_G);
+  CLOSE_B = prefs.getUInt(KEY_CC_B, CLOSE_B);
+
+  // Sanity clamp
+  OPEN_DEG  = constrain(OPEN_DEG, 0, 180);
+  CLOSE_DEG = constrain(CLOSE_DEG, 0, 180);
+
+  Serial.println("NVS loaded: open=" + String(OPEN_DEG) + 
+                 " close=" + String(CLOSE_DEG) + 
+                 " state=" + String(stateToInt(state)));
+}
+
 // --- LED helpers ---
 void ledOff() {
   pixel.setPixelColor(0, pixel.Color(0, 0, 0));
@@ -55,7 +117,7 @@ void ledOff() {
 }
 
 void ledGreen() {
-  pixel.setPixelColor(0, pixel.Color(0, 255, 0));
+  pixel.setPixelColor(0, pixel.Color(OPEN_R, OPEN_G, OPEN_B));
   pixel.show();
 }
 
@@ -67,9 +129,11 @@ void ledRed() {
 void setLedForState(GateState s) {
   // Bemærk: WAIT håndteres i updateBlink(), så her sætter vi bare en starttilstand.
   if (s == STATE_OPEN) {
-    ledGreen();
+    pixel.setPixelColor(0, pixel.Color(OPEN_R, OPEN_G, OPEN_B));
+    pixel.show();
   } else if (s == STATE_CLOSED) {
-    ledRed();
+    pixel.setPixelColor(0, pixel.Color(CLOSE_R, CLOSE_G, CLOSE_B));
+    pixel.show();
   } else if (s == STATE_WAIT) {
     // start med slukket (blink starter i loop)
     ledOff();
@@ -114,14 +178,17 @@ void handleCmd(String cmd) {
     moveTo(OPEN_DEG);
     state = STATE_OPEN;
     setLedForState(state);
+    saveState(); // Gem kun tilstand
   } else if (cmd == "WAIT") {
     // Venter/efterløb: ingen servo-bevægelse, kun blink
     state = STATE_WAIT;
     resetBlink();
+    saveState(); // Gem kun tilstand
   } else if (cmd == "CLOSE") {
     moveTo(CLOSE_DEG);
     state = STATE_CLOSED;
     setLedForState(state);
+    saveState(); // Gem kun tilstand
   } else {
     Serial.print("Ukendt cmd: ");
     Serial.println(cmd);
@@ -198,19 +265,30 @@ void setup() {
   Serial.begin(115200);
   delay(300);
 
+  // Init NVS
+  prefs.begin(NVS_NS, false); // read-write mode
+  loadNvsAll(); // Indlæs gemte værdier
+
   // LED
   pixel.begin();
   pixel.setBrightness(40);
-  setLedForState(STATE_UNKNOWN);
+  setLedForState(state); // Vis indlæst tilstand
 
   // Servo
   gateServo.setPeriodHertz(50);
   gateServo.attach(SERVO_PIN, 500, 2400);
 
-  // Start i lukket
-  moveTo(CLOSE_DEG);
-  state = STATE_CLOSED;
-  setLedForState(state);
+  // Gendan sidste position baseret på tilstand
+  if (state == STATE_OPEN) {
+    moveTo(OPEN_DEG);
+  } else if (state == STATE_CLOSED) {
+    moveTo(CLOSE_DEG);
+  } else {
+    // Default til lukket hvis ukendt
+    moveTo(CLOSE_DEG);
+    state = STATE_CLOSED;
+    setLedForState(state);
+  }
 
   // Switch (midlertidig)
   pinMode(SWITCH_PIN, INPUT_PULLUP); // afbryder til GND når "ON"
