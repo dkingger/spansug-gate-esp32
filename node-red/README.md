@@ -28,7 +28,21 @@ Flowet kommunikerer med ESP32‑C3‑baserede gates via **MQTT** og håndterer:
 
 * ESP32 er “muskel + I/O” (servo, LED, input)
 * Node‑RED er “hjernen” (logik, timing, koordinering)
+### Flow-visualisering
 
+Billedet ovenfor viser Node‑RED flowet med:
+
+- **Input:** `machine_active` MQTT topic fra maskinetilstandssensor
+- **Switch node:** Distribuerer logik baseret på maskinstatus (1 = aktiv, 0 = inaktiv)
+- **OPEN / WAIT / CLOSE nodes:** Sender kommandoer via MQTT til gate
+- **Lukke-delay:** Venter N sekunder før `CLOSE` sendes (kan konfigureres)
+- **Output:** Publiserer kommandoer på `spansug/gate/rondelsliber/cmd`
+
+**Workflow:**
+1. Maskinen bliver aktiv → `OPEN` sendes med det samme
+2. Maskinen stopper → `WAIT` sendes, timer starter
+3. Efter timer-interval → `CLOSE` sendes automatisk
+4. Hvis maskinen starter igen inden timeren løber ud, afbrydes lukningen
 ---
 
 ## MQTT topics (eksempel: rondelsliber)
