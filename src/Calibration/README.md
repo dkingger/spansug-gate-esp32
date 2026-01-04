@@ -71,34 +71,6 @@ Værdierne gemmes automatisk når de ændres via webinterfacet, og indlæses aut
 
 ---
 
-## Sådan bruges kalibreringskoden
-
-### 1. Flash firmwaren
-Brug **VS Code + PlatformIO** til at bygge og uploade projektet.
-
-### 2. Åbn Serial Monitor
-- Baud rate: **115200**
-- PlatformIO: `Ctrl + Alt + S`
-
-### 3. Tast kommandoer
-Skriv ét tegn ad gangen og tryk Enter:
-
-| Tast | Funktion |
-|----|---------|
-| `o` | Gå til OPEN-position |
-| `c` | Gå til CLOSE-position |
-| `+` | Øg OPEN-vinkel |
-| `-` | Sænk OPEN-vinkel |
-| `,` | Øg CLOSE-vinkel |
-| `.` | Sænk CLOSE-vinkel |
-| `p` | Print aktuelle værdier |
-
-Kalibrér indtil:
-- Spjældet lukker helt tæt **uden at servoen presser**
-- Spjældet åbner helt **uden at ramme mekanisk stop**
-
----
-
 ## Vigtige noter
 
 - Brug altid **fælles GND**

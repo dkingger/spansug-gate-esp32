@@ -3,7 +3,7 @@
 Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
 > 🔧 **Kalibrering**
-> Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`Calibration/`** og har sin egen `README.md`.
+> Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`src/Calibration/`** og har sin egen `README.md`.
 
 ---
 
@@ -34,11 +34,11 @@ Raspberry Pi:
 
 ```
 /
-├── src/                # Aktiv ESP32 MQTT-firmware
-├── Calibration/        # Kalibreringskode (egen README)
+├── src/                # MQTT-firmware
+├── src/Calibration/    # Kalibreringskode (egen README)
 ├── images/             # Diagrammer og fotos
 ├── node-red/           # Node-RED flow (egen README)
-├── platformio.ini
+├── platformio.ini      # Indeholder begge environments (MQTT og Calibration)
 └── README.md           # (denne fil)
 ```
 
@@ -50,6 +50,7 @@ Raspberry Pi:
 * Servo (MG996R / MG966R eller tilsvarende)
 * 1× WS2812B (NeoPixel)
 * Strømsensor m. relæ udgang
+* Kondensator til at klare peeks fra Servo motoren
 
 ![Test setup – servo og WS2812B](/images/SetupConnections.png)
 
