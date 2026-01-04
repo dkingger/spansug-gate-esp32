@@ -59,6 +59,8 @@ for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne
 
 ### Flow-visualisering
 
+![Automatic Flow Diagram](../images/automatic_flow.png)
+
 **Input:**
 - `spansug/gate/[gatename]/machine_active` – maskinstatus fra ESP32
   - `1` = maskinen kører
@@ -105,6 +107,8 @@ flow.rundsav_auto_status = "LUKKET"  (nuværende tilstand)
 
 ### Funktionalitet
 
+![Manual Flow Diagram](../images/manual_flow.png)
+
 Denne gate har **INGEN servo** – kun position-sensor input.
 
 **Input:**
@@ -127,6 +131,10 @@ Relay Manager bruger denne status til at beslutte om relæen skal være tændt.
 ---
 
 ## RELAY MANAGER (spansug-relay-manager.json) – KRITISK!
+
+### Flowdiagram
+
+![Relay Manager Flow Diagram](../images/relay_manager.png)
 
 ### Problemstilling
 
