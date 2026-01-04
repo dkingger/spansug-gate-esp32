@@ -244,8 +244,8 @@ Relay Manager bruger flow context til at tælle åbne gates.
 * [x] Blinkende LED i ventefase (`WAIT`)
 * [x] Node-RED efterløbstid
 * [ ] CT clamp / strømsensor
-* [ ] Generisk gate-konfiguration
-* [ ] Master-logik for spånsuger
+* [x] Generisk gate-konfiguration
+* [x] Master-logik for spånsuger
 
 ---
 
