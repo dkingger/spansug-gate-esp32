@@ -1,235 +1,407 @@
-# Spånsug – Gate Controller (ESP32‑C3) + Node‑RED backend
+# Spånsug – Gate Controller (ESP32-C3) + Node-RED backend
 
-Denne mappe indeholder **Node‑RED‑flowet**, som fungerer som den centrale styringslogik
+Denne mappe indeholder **Node-RED-flowene**, som fungerer som den centrale styringslogik
 for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-Flowet kommunikerer med ESP32‑C3‑baserede gates via **MQTT** og håndterer:
+## 5 Flows som arbetar sammen
 
-* åbning af spjæld
-* ventefase / efterløb
-* lukning af spjæld
+**Automatiske gates (med servo-kontrol):**
+- `spansug-gate-rundsav_auto.json` – Rundsav (automatisk åbning ved maskinstatus)
+- `spansug-gate-stor_cnc.json` – Stor CNC (automatisk åbning ved maskinstatus)
+- `spansug-gate-lille_cnc.json` – Lille CNC (automatisk åbning ved maskinstatus)
+
+**Manuel gate (kun sensor, ingen servo):**
+- `spansug-gate-rundsav_manual.json` – Rundsav manuel (rapporterer position-sensor status)
+
+**KRITISK – Central relay manager:**
+- `spansug-relay-manager.json` – **Sikrer at kun ét relæ styrer spånsugmotoren**
 
 ---
 
 ## Arkitektur (overblik)
 
 ```
-[ Maskine ]
-    │
-    ▼
-[ ESP32‑C3 gate ]  --MQTT-->  [ Raspberry Pi (Mosquitto + Node‑RED) ]
-    ▲                               │
-    └----------MQTT cmd-------------┘
+[ Maskine 1 ]     [ Maskine 2 ]     [ Maskine 3 ]
+    │                 │                 │
+    ▼                 ▼                 ▼
+[ ESP32-gate1 ]   [ ESP32-gate2 ]   [ ESP32-gate3 ]
+    │                 │                 │
+    └─────────────────┼─────────────────┘
+                      │
+                    MQTT
+                      │
+                      ▼
+          [ Raspberry Pi Node-RED ]
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+       Gate1        Gate2    Relay Manager
+       Flow         Flow     Flow (KRITISK)
+          │           │           │
+          └───────────┼───────────┘
+                      │
+                      ▼
+             [ GPIO 12 Relay ]
+            (Spånsuger motor)
 ```
-
-![Node‑RED flow](../images/flow.png)
 
 **Princip:**
+- ESP32 er "muskel + I/O" (servo, LED, input)
+- Node-RED er "hjernen" (logik, timing, koordinering)
+- **Relay Manager** sikrer at kun ét relæ styrer spånsuger-motoren
+  - Tæller hvor mange gates der er åbne
+  - Holder relæen TIL så længe mindst ét gate er åbent
+  - Slukker relæen først når ALLE gates er lukkede
 
-* ESP32 er “muskel + I/O” (servo, LED, input)
-* Node‑RED er “hjernen” (logik, timing, koordinering)
+---
+
+## Automatiske Gates (rundsav_auto, stor_cnc, lille_cnc)
+
 ### Flow-visualisering
 
-Billedet ovenfor viser Node‑RED flowet med:
+**Input:**
+- `spansug/gate/[gatename]/machine_active` – maskinstatus fra ESP32
+  - `1` = maskinen kører
+  - `0` = maskinen stoppet
 
-- **Input:** `machine_active` MQTT topic fra maskinetilstandssensor
-- **Switch node:** Distribuerer logik baseret på maskinstatus (1 = aktiv, 0 = inaktiv)
-- **OPEN / WAIT / CLOSE nodes:** Sender kommandoer via MQTT til gate
-- **Lukke-delay:** Venter N sekunder før `CLOSE` sendes (kan konfigureres)
-- **Output:** Publiserer kommandoer på `spansug/gate/rondelsliber/cmd`
+**Output:**
+- `spansug/gate/[gatename]/cmd` – kommandoer til ESP32
+  - `OPEN` = åbn gate (servo bevæger sig)
+  - `WAIT` = ventefase / efterløb (blinkende LED)
+  - `CLOSE` = luk gate
+- `spansug/gate/[gatename]/status` – rapporterer nuværende tilstand
 
-**Workflow:**
-1. Maskinen bliver aktiv → `OPEN` sendes med det samme
-2. Maskinen stopper → `WAIT` sendes, timer starter
-3. Efter timer-interval → `CLOSE` sendes automatisk
-4. Hvis maskinen starter igen inden timeren løber ud, afbrydes lukningen
----
+### Workflow
 
-## MQTT topics (eksempel: rondelsliber)
+1. **Maskinen bliver aktiv** (`machine_active = 1`)
+   - Sendes `OPEN` med det samme
+   - Gate åbner, LED lyser grønt
 
-### Fra ESP32 → backend
+2. **Maskinen stopper** (`machine_active = 0`)
+   - Sendes `WAIT` med det samme
+   - Timer starter (standard 30 sekunder, kan konfigureres)
+   - Gate forbliver åbent, LED blinker grønt
 
-**Topic**
+3. **Timer udløber**
+   - Sendes `CLOSE`
+   - Gate lukker, LED lyser rødt
+
+4. **Maskinen starter igen inden timer udløber**
+   - Timer annulleres
+   - Sendes `OPEN` igen (ingen uønsket luk-cyklus)
+
+### Variabler pr. gate
+
+Hver gate bruger disse **flow-variabler** (eksempel: rundsav_auto):
 
 ```
-spansug/gate/rondelsliber/machine_active
+flow.rundsav_auto_delay = 30  (sekunder)
+flow.rundsav_auto_status = "LUKKET"  (nuværende tilstand)
 ```
-
-**Payload**
-
-* `1` → maskinen kører
-* `0` → maskinen stoppet
-
----
-
-### Fra backend → ESP32
-
-**Topic**
-
-```
-spansug/gate/rondelsliber/cmd
-```
-
-**Payload**
-
-* `OPEN`  – åbn spjæld (servo bevæger sig)
-* `WAIT`  – ventefase / efterløb (ingen servo, LED blinker grønt)
-* `CLOSE` – luk spjæld
 
 ---
 
-## Node‑RED flow – funktionel beskrivelse
+## Manuel Gate (rundsav_manual)
 
-Flowet reagerer udelukkende på ændringer i `machine_active`.
+### Funktionalitet
 
-### 1. Maskinen starter
+Denne gate har **INGEN servo** – kun position-sensor input.
 
-Når:
+**Input:**
+- GPIO 23 (position-sensor fra maskine)
+  - `1` = gate åbent
+  - `0` = gate lukket
 
-```
-machine_active = 1
-```
+**Output:**
+- `spansug/gate/rundsav_manual/status` – rapporterer sensor-status
+  - `ÅBEN` eller `LUKKET`
 
-Node‑RED gør følgende:
+### Workflow
 
-* sender `OPEN` **med det samme** til ESP32
-* nulstiller evt. aktiv lukke‑timer
+Flow læser GPIO 23 løbende og publiserer status på MQTT.
+- Hvis sensor siger "åbent" → publiserer `ÅBEN`
+- Hvis sensor siger "lukket" → publiserer `LUKKET`
 
-Resultat:
-
-* spjæld åbner
-* LED lyser **grønt (fast)**
-
----
-
-### 2. Maskinen stopper (ventefase)
-
-Når:
-
-```
-machine_active = 0
-```
-
-Node‑RED gør følgende:
-
-1. sender `WAIT` **med det samme**
-2. starter en timer med efterløbstid
-
-Resultat:
-
-* spjæld forbliver åbent
-* LED **blinker grønt** under hele ventefasen
+Relay Manager bruger denne status til at beslutte om relæen skal være tændt.
 
 ---
 
-### 3. Efterløbstid udløber
+## RELAY MANAGER (spansug-relay-manager.json) – KRITISK!
 
-Når timeren udløber:
+### Problemstilling
 
-* Node‑RED sender `CLOSE`
+**Hvis hver gate havde sit eget relæ-output:**
 
-Resultat:
+Scenario der går galt:
+1. stor_cnc åbner → slår relæen TIL
+2. rundsav_auto åbner 1 minut senere → relæen forbliver TIL
+3. stor_cnc lukker → sendes kommando til at slukke relæen
+4. **Problem:** Relæen slukkes selv om rundsav_auto stadig er åbent!
+5. Spånsuger stopper mens rundsav_auto stadig jobber ❌
 
-* spjæld lukker
-* LED lyser **rødt (fast)**
+### Løsning – Central Relay Manager
+
+**En enkelt flow styrer relæen baseret på status fra ALLE gates:**
+
+```
+Flow sammenligner alle gate-statuser:
+  IF  gate1 == "ÅBEN" OR gate2 == "ÅBEN" OR gate3 == "ÅBEN" OR manual == "ÅBEN"
+  THEN relæ = ON
+  ELSE relæ = OFF
+```
+
+### Relay Manager Flow – Funktionalitet
+
+**Subscriber på:**
+- `spansug/gate/+/cmd` – alle gate-kommandoer
+- `spansug/gate/+/status` – alle gate-status updates
+
+**Logik (function node):**
+```javascript
+// Tæl hvor mange gates der er åbne
+let openCount = 0;
+let gateStates = flow.get("gateStates") || {};
+
+// Opdater gate-status fra besked
+gateStates[msg.topic.split("/")[2]] = msg.payload;
+flow.set("gateStates", gateStates);
+
+// Tæl åbne gates
+Object.values(gateStates).forEach(state => {
+  if (state === "ÅBEN" || state === "OPEN") openCount++;
+});
+
+// Bestem relæ-status
+msg.relay = openCount > 0 ? "ON" : "OFF";
+node.send(msg);
+```
+
+**GPIO Output (node 23):**
+- PIN 12 = Relay
+- Når msg.relay == "ON" → Pin går HIGH
+- Når msg.relay == "OFF" → Pin går LOW
+
+**Debug output:**
+- Viser hver gang relæen skifter tilstand
+- Viser antal åbne gates
+- Viser hvilke gates der er åbne
+
+### Test af Relay Manager
+
+**Scenario 1: Enkelt gate åbner**
+- stor_cnc sender "OPEN"
+- Relay Manager tæller: 1 åbent gate
+- Relæ = ON ✓
+- Spånsuger starter ✓
+
+**Scenario 2: Andet gate åbner mens første er åbent**
+- rundsav_auto sender "OPEN"
+- Relay Manager tæller: 2 åbne gates
+- Relæ forbliver ON (ikke påvirket af skift) ✓
+
+**Scenario 3: Første gate lukker, anden stadig åben**
+- stor_cnc sender "CLOSE"
+- Relay Manager tæller: 1 åbent gate (rundsav_auto)
+- Relæ forbliver ON ✓
+- Spånsuger fortsætter uden afbrydelse ✓
+
+**Scenario 4: Alle gates lukker**
+- rundsav_auto sender "CLOSE"
+- Relay Manager tæller: 0 åbne gates
+- Relæ = OFF ✓
+- Spånsuger stopper ✓
 
 ---
 
-### 4. Maskinen starter igen før timeren udløber
+## MQTT Topics Overview
 
-Hvis:
+### Alle gates følger samme topic-struktur
 
+Eksempel for `rundsav_auto`:
+
+**ESP32 → Node-RED:**
 ```
-machine_active = 1
+spansug/gate/rundsav_auto/machine_active
+Payload: 1 eller 0
 ```
 
-inden efterløbstiden er gået
+**Node-RED → ESP32:**
+```
+spansug/gate/rundsav_auto/cmd
+Payload: OPEN, WAIT, eller CLOSE
+```
 
-Node‑RED:
+**Status (fra Node-RED):**
+```
+spansug/gate/rundsav_auto/status
+Payload: ÅBEN eller LUKKET
+```
 
-* annullerer lukke‑timeren
-* sender `OPEN`
+### Alle gate-navne
 
-Resultat:
-
-* spjæld forbliver åbent
-* ingen unødvendig åbne/lukke‑cyklus
+- `rundsav_auto`
+- `stor_cnc`
+- `lille_cnc`
+- `rundsav_manual`
 
 ---
 
-## Variabler
+## GPIO Konfiguration
 
-Flowet bruger følgende **flow‑variabel**:
+| Funktion              | GPIO | Type    | Beskrivelse                                    |
+| -------------------- | ---- | ------- | ---------------------------------------------- |
+| Position sensor       | 23   | INPUT   | Rundsav manuel gate position (1=åben, 0=lukket) |
+| Spånsuger relæ        | 12   | OUTPUT  | Styret af Relay Manager (KRITISK SHARED)       |
 
-```
-flow.lukke_delay
-```
-
-* Enhed: **sekunder**
-* Bruges som efterløbstid
-* Kan ændres ét sted uden at ændre selve flow‑logikken
+> **VIGTIG:** GPIO 12 (relæ) styres UDELUKKENDE af Relay Manager flow!
 
 ---
 
-## Manuel MQTT‑test (køres på Raspberry Pi)
+## Manuel MQTT-test (køres på Raspberry Pi)
 
-**Se al trafik for en gate**
-
+**Se al trafik for en gate:**
 ```bash
-mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rondelsliber/#" -v
+mosquitto_sub -h 127.0.0.1 -t "spansug/gate/rundsav_auto/#" -v
 ```
 
-**Send kommandoer manuelt**
-
+**Se alle gates:**
 ```bash
-# Åbn
-mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "OPEN"
+mosquitto_sub -h 127.0.0.1 -t "spansug/gate/+" -v
+```
 
-# Ventefase (blink)
-mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "WAIT"
+**Send kommandoer manuelt:**
+```bash
+# Åbn gate
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rundsav_auto/cmd" -m "OPEN"
 
-# Luk
-mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
+# Ventefase
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rundsav_auto/cmd" -m "WAIT"
+
+# Luk gate
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rundsav_auto/cmd" -m "CLOSE"
+```
+
+**Test relay manager:**
+```bash
+# Watch relay status
+mosquitto_sub -h 127.0.0.1 -t "spansug/relay/#" -v
+
+# Watch all gates + relay
+mosquitto_sub -h 127.0.0.1 -t "spansug/#" -v
 ```
 
 ---
 
-## Import / Export af Node‑RED flow
+## Import/Export af Node-RED Flows
+
+### Import (fra JSON-fil)
+
+1. Node-RED → menu (≡) → **Import**
+2. Vælg JSON-fil fra denne mappe
+3. Klik **Import**
+4. Klik **Deploy**
+
+**Rækkefølge (vigtig):**
+1. Importer først `spansug-relay-manager.json`
+2. Importer derefter alle 4 gate-flows
 
 ### Export (gem flow som fil)
 
-Node‑RED → menu (≡) → **Export** → vælg *Current flow* (eller *Selected nodes*) → **Download (JSON)**
-
-### Import
-
-Node‑RED → menu (≡) → **Import** → vælg JSON‑fil → **Import** → **Deploy**
+1. Node-RED → menu (≡) → **Export**
+2. Vælg *Current flow* eller *Selected nodes*
+3. Klik **Download**
+4. Gem som `.json` fil i denne mappe
 
 ---
 
-## Raspberry Pi / Mosquitto (LAN)
+## Node-RED konfiguration (Mosquitto)
 
-MQTT broker kører på Raspberry Pi:
+Flows forventer MQTT broker på **lokal Raspberry Pi:**
 
-* IP (eksempel): `192.168.87.133`
-* Port: `1883`
+- Broker: `127.0.0.1` (localhost)
+- Port: `1883`
+- Username: (tom)
+- Password: (tom)
 
-Tjek broker:
-
+**Tjek at Mosquitto kører:**
 ```bash
 sudo ss -lntp | grep 1883
+```
+
+**Start Mosquitto hvis det ikke kører:**
+```bash
+sudo systemctl start mosquitto
+sudo systemctl enable mosquitto  # Auto-start ved opstart
+```
+
+---
+
+## Debugging og Troubleshooting
+
+### Relay Manager ikke aktiveret?
+
+**Symptom:** Spånsuger starter ikke når gate åbner.
+
+**Tjekpunkter:**
+1. Er Relay Manager flow startet? (Deploy Status grønt?)
+2. Søg "Debug" node i Relay Manager for at se gate-status
+3. Tjek GPIO 12 med multimeter (skal være HIGH når gate åbent)
+
+### Gate sendes OPEN men servo bevæger sig ikke?
+
+**Symptom:** Relay Manager viser gate åbent, men servo reagerer ikke.
+
+**Tjekpunkter:**
+1. Er ESP32 tændt og koblet til WiFi?
+2. Tjek ESP32 seriel-output (se `src/main.cpp`)
+3. Tjek at ESP32 abonnerer korrekt på `spansug/gate/[gatename]/cmd`
+
+### Relay Manager tæller forkert?
+
+**Symptom:** Spånsuger slukkes selvom gate stadig er åbent.
+
+**Tjekpunkter:**
+1. Åbn Debug node i Relay Manager
+2. Aktivér alle gates en efter en
+3. Tjek at gate-status bliver opdateret korrekt
+4. Tjek at count er korrekt (bør være antal åbne gates)
+
+### MQTT forbindelse mistet?
+
+**Symptom:** Flows viser rødt – MQTT connect fejler.
+
+**Tjekpunkter:**
+```bash
+# Test MQTT forbindelse
+mosquitto_pub -h 127.0.0.1 -t "test" -m "hej"
+
+# Se om der er firewall problemer
+sudo iptables -L | grep 1883
 ```
 
 ---
 
 ## Status
 
-* [x] MQTT‑baseret gate‑styring
-* [x] OPEN / WAIT / CLOSE‑model
-* [x] Blinkende LED i ventefase
-* [x] Efterløbstid via Node‑RED
-* [ ] CT clamp / strømsensor
-* [ ] Generisk flow til alle gates
-* [ ] Master‑logik for spånsuger
+- [x] 3× automatiske gate-flows (rundsav_auto, stor_cnc, lille_cnc)
+- [x] 1× manual gate-flow (rundsav_manual)
+- [x] Central Relay Manager (løser multi-gate relay problem)
+- [x] Blinkende LED i ventefase (WAIT)
+- [x] Efterløbstid via Node-RED (konfigurerbar pr. gate)
+- [x] MQTT-baseret kommunikation
+- [ ] Strømsensor / CT clamp integration
+- [ ] Webinterface for manuel gate-kontrol
+- [ ] Datalogging af gate-åbninger
+
+---
+
+## Noter
+
+* Projektet er designet til **værkstedsbrug**
+* **KRITISK:** Relay Manager skal aldrig slukkes eller deaktiveres
+* Robusthed prioriteres over kompleksitet
+* ESP32 holdes bevidst enkel
+* Al beslutningslogik samles centralt i Node-RED
 
 ---
 

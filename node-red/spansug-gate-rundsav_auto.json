@@ -1,0 +1,362 @@
+[
+    {
+        "id": "d538fa3b378701c5",
+        "type": "tab",
+        "label": "Rundsav Gate",
+        "disabled": false,
+        "info": "Gate controller for rundsav_auto with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "7c473b8490196ffd",
+        "type": "mqtt in",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "topic": "spansug/gate/rundsav_auto/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "b1792ce8f939be36"
+            ]
+        ]
+    },
+    {
+        "id": "b1792ce8f939be36",
+        "type": "switch",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "d5f604fa41e8fc77"
+            ],
+            [
+                "26c6bdc217ef1450",
+                "6983d3b613c914bf"
+            ]
+        ]
+    },
+    {
+        "id": "d5f604fa41e8fc77",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "3a67d36fa6197dad",
+                "57dac37c01ea16ee"
+            ]
+        ]
+    },
+    {
+        "id": "3ac551b231bdab1f",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "8b2dc820246b197d"
+            ]
+        ]
+    },
+    {
+        "id": "9440cdebe6e52437",
+        "type": "inject",
+        "z": "d538fa3b378701c5",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "462b0a3a54e53bc3"
+            ]
+        ]
+    },
+    {
+        "id": "462b0a3a54e53bc3",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6983d3b613c914bf",
+        "type": "function",
+        "z": "d538fa3b378701c5",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "25be2a02d6a1fbd0"
+            ]
+        ]
+    },
+    {
+        "id": "25be2a02d6a1fbd0",
+        "type": "delay",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "3ac551b231bdab1f"
+            ]
+        ]
+    },
+    {
+        "id": "8b2dc820246b197d",
+        "type": "mqtt out",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "topic": "spansug/gate/rundsav_auto/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "3a67d36fa6197dad",
+        "type": "mqtt out",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "topic": "spansug/gate/rundsav_auto/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "57dac37c01ea16ee",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "25be2a02d6a1fbd0"
+            ]
+        ]
+    },
+    {
+        "id": "26c6bdc217ef1450",
+        "type": "change",
+        "z": "d538fa3b378701c5",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "f943f04bee6c57fb"
+            ]
+        ]
+    },
+    {
+        "id": "f943f04bee6c57fb",
+        "type": "mqtt out",
+        "z": "d538fa3b378701c5",
+        "name": "",
+        "topic": "spansug/gate/rundsav_auto/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "675a7eb26a300987",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4af0fbaffc0d8e81",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-pi-gpio": "2.0.6"
+        }
+    }
+]

@@ -12,7 +12,7 @@ static const char* WIFI_PASS = "12345678";
 static const char* MQTT_HOST = "192.168.87.133";  // Raspberry Pi
 static const uint16_t MQTT_PORT = 1883;
 
-static const char* GATE_ID = "rondelsliber";
+static const char* GATE_ID = "stor_cnc";
 
 // Topics
 static String topic_cmd    = String("spansug/gate/") + GATE_ID + "/cmd";

@@ -1,0 +1,189 @@
+[
+    {
+        "id": "manual_gate_rundsav",
+        "type": "tab",
+        "label": "Rundsav Manual Gate",
+        "disabled": false,
+        "info": "Manual gate status sensor for rundsav - reports gate position to MQTT",
+        "env": []
+    },
+    {
+        "id": "gpio_input_rundsav_manual",
+        "type": "rpi-gpio in",
+        "z": "manual_gate_rundsav",
+        "name": "Gate position sensor",
+        "pin": "23",
+        "intype": "tri",
+        "debounce": "25",
+        "read": false,
+        "x": 250,
+        "y": 100,
+        "wires": [
+            [
+                "switch_gate_status"
+            ]
+        ]
+    },
+    {
+        "id": "switch_gate_status",
+        "type": "switch",
+        "z": "manual_gate_rundsav",
+        "name": "Gate status",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 480,
+        "y": 100,
+        "wires": [
+            [
+                "gate_open"
+            ],
+            [
+                "gate_closed"
+            ]
+        ]
+    },
+    {
+        "id": "gate_open",
+        "type": "change",
+        "z": "manual_gate_rundsav",
+        "name": "ÅBEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ÅBEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 650,
+        "y": 60,
+        "wires": [
+            [
+                "mqtt_status_open"
+            ]
+        ]
+    },
+    {
+        "id": "gate_closed",
+        "type": "change",
+        "z": "manual_gate_rundsav",
+        "name": "LUKKET",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "LUKKET",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 650,
+        "y": 140,
+        "wires": [
+            [
+                "mqtt_status_closed"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_status_open",
+        "type": "mqtt out",
+        "z": "manual_gate_rundsav",
+        "name": "",
+        "topic": "spansug/gate/rundsav_manual/status",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 880,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "mqtt_status_closed",
+        "type": "mqtt out",
+        "z": "manual_gate_rundsav",
+        "name": "",
+        "topic": "spansug/gate/rundsav_manual/status",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 880,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "675a7eb26a300987",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4af0fbaffc0d8e81",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-pi-gpio": "2.0.6"
+        }
+    }
+]

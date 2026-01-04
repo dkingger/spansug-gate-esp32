@@ -10,16 +10,32 @@ Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af
 ## Overordnet arkitektur
 
 ```
-[ Maskine ]
-    │
-    ▼
-[ ESP32-C3 gate ]  --MQTT-->  [ Raspberry Pi ]
-    ▲                               │
-    └-----------MQTT cmd------------┘
+[ Maskine 1 ]     [ Maskine 2 ]     [ Maskine 3 ]
+    │                 │                 │
+    ▼                 ▼                 ▼
+[ ESP32-gate1 ]   [ ESP32-gate2 ]   [ ESP32-gate3 ]
+    │                 │                 │
+    └─────────────────┼─────────────────┘
+                      │
+                    MQTT
+                      │
+                      ▼
+          [ Raspberry Pi Node-RED ]
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+     Automatiske   Manuel      Relay Manager
+      Gates (3)    Gate (1)    (KRITISK - 1)
+          │           │           │
+          └───────────┼───────────┘
+                      │
+                      ▼
+             [ GPIO 12 Relay ]
+            (Spånsuger motor)
 
 Raspberry Pi:
 - Mosquitto (MQTT broker)
-- Node-RED (logik + efterløbstid)
+- Node-RED (5 flows: 3 auto gates + 1 manual + 1 relay manager)
 ```
 
 **Princip:**
@@ -27,6 +43,10 @@ Raspberry Pi:
 * ESP32 er en simpel hardware-node (servo, LED, input)
 * Al beslutningslogik ligger i Node-RED
 * ESP32 viser kun status (LED) og udfører kommandoer
+* **KRITISK:** En central Relay Manager koordinerer spånsuger-motoren
+  - Kun ét relæ styrer spånsuger - kan ikke kontrolleres individuelt fra hver gate
+  - Relay Manager tæller åbne gates: ON hvis ≥1 gate åbent, OFF hvis alle lukket
+  - Forhindrer at spånsuger slukkes mens andre gates stadig er åbne
 
 ---
 
@@ -139,9 +159,22 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 ## Node-RED backend (kort)
 
-Node-RED kører på Raspberry Pi og fungerer som **central styringslogik**.
+Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 5 integrerede flows.
 
-### Flow-princip
+### 5 Flows arbetar sammen
+
+**Automatiske gates (med servo-kontrol):**
+- `spansug-gate-rundsav_auto.json` – Rundsav
+- `spansug-gate-stor_cnc.json` – Stor CNC
+- `spansug-gate-lille_cnc.json` – Lille CNC
+
+**Manuel gate (kun sensor):**
+- `spansug-gate-rundsav_manual.json` – Rundsav manuel
+
+**KRITISK – Central relay koordinering:**
+- `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren
+
+### Flow-princip (automatiske gates)
 
 1. **`machine_active = 1`**
 
@@ -162,9 +195,45 @@ Node-RED kører på Raspberry Pi og fungerer som **central styringslogik**.
    * Send `OPEN`
    * Lukning annulleres
 
-### Variabel
+### Relay Manager Flow (KRITISK!)
 
-* `flow.lukke_delay` – efterløbstid i **sekunder**
+**Problem:** Hvis hver gate havde sit eget relæ-output, kunne relæen slukkes af en gate selvom andre stadig var åbne.
+
+**Løsning:** Central Relay Manager tæller alle åbne gates:
+- Relæ = ON hvis ≥1 gate åbent
+- Relæ = OFF kun hvis ALLE gates lukket
+
+**Input:** Abonnerer på status fra alle 4 gates
+**Output:** Styrer GPIO 12 (spånsuger-relæ)
+
+### Variabler
+
+Hver gate bruger **flow-variabler** for efterløbstid og status:
+
+```
+flow.[gatename]_delay = 30  (sekunder)
+flow.[gatename]_status = "LUKKET"
+```
+
+Relay Manager bruger flow context til at tælle åbne gates.
+
+---
+
+## Relay Manager – Hvorfor det er vigtigt
+
+**Scenarie uden central manager (GALT ❌):**
+1. `stor_cnc` åbner → relæ ON
+2. `rundsav_auto` åbner → relæ forbliver ON
+3. `stor_cnc` lukker → sendes kommando til relæ OFF
+4. **Problem:** Relæ slukkes selv om `rundsav_auto` stadig er åbent!
+5. Spånsuger stopper mens der stadig arbejdes ❌
+
+**Med central Relay Manager (RIGTIGT ✓):**
+1. `stor_cnc` åbner → Manager tæller 1 gate åbent → relæ ON
+2. `rundsav_auto` åbner → Manager tæller 2 gates åbne → relæ forbliver ON
+3. `stor_cnc` lukker → Manager tæller 1 gate åbent → relæ forbliver ON ✓
+4. `rundsav_auto` lukker → Manager tæller 0 gates åbne → relæ OFF
+5. Spånsuger stopper først når alle arbejder er færdige ✓
 
 ---
 

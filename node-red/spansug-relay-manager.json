@@ -1,0 +1,144 @@
+[
+    {
+        "id": "relay_manager_flow",
+        "type": "tab",
+        "label": "Spånsug Relay Manager",
+        "disabled": false,
+        "info": "Central relay manager - tracks all gates and controls dust collector relay",
+        "env": []
+    },
+    {
+        "id": "mqtt_gate_commands",
+        "type": "mqtt in",
+        "z": "relay_manager_flow",
+        "name": "All gate commands",
+        "topic": "spansug/gate/+/cmd",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "gate_state_tracker"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_gate_status",
+        "type": "mqtt in",
+        "z": "relay_manager_flow",
+        "name": "Manual gate status",
+        "topic": "spansug/gate/+/status",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "gate_state_tracker"
+            ]
+        ]
+    },
+    {
+        "id": "gate_state_tracker",
+        "type": "function",
+        "z": "relay_manager_flow",
+        "name": "Track gate states",
+        "func": "// Initialize gate states in flow context\nlet gates = flow.get('gates') || {};\n\n// Extract gate ID from topic (e.g., \"spansug/gate/rundsav_auto/cmd\" -> \"rundsav_auto\")\nconst topicParts = msg.topic.split('/');\nconst gateId = topicParts[2];\nconst command = msg.payload;\n\n// Update gate state\nif (command === 'OPEN' || command === 'WAIT' || command === 'ÅBEN') {\n    gates[gateId] = 'OPEN';\n} else if (command === 'CLOSE' || command === 'LUKKET') {\n    gates[gateId] = 'CLOSED';\n}\n\n// Save updated states\nflow.set('gates', gates);\n\n// Count open gates\nlet openCount = 0;\nfor (let gate in gates) {\n    if (gates[gate] === 'OPEN') {\n        openCount++;\n    }\n}\n\n// Decide relay state\nif (openCount > 0) {\n    msg.payload = 1;  // Relay ON\n    msg.status = openCount + ' gate(s) open';\n} else {\n    msg.payload = 0;  // Relay OFF\n    msg.status = 'All gates closed';\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 130,
+        "wires": [
+            [
+                "debug_relay_state",
+                "relay_output"
+            ]
+        ]
+    },
+    {
+        "id": "debug_relay_state",
+        "type": "debug",
+        "z": "relay_manager_flow",
+        "name": "Relay status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "status",
+        "targetType": "msg",
+        "statusVal": "status",
+        "statusType": "msg",
+        "x": 630,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "relay_output",
+        "type": "rpi-gpio out",
+        "z": "relay_manager_flow",
+        "name": "Dust collector relay",
+        "pin": "12",
+        "set": "",
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 660,
+        "y": 130,
+        "wires": []
+    },
+    {
+        "id": "675a7eb26a300987",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "4af0fbaffc0d8e81",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-pi-gpio": "2.0.6"
+        }
+    }
+]
