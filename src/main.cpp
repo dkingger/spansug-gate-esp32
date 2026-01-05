@@ -6,10 +6,10 @@
 #include <Preferences.h>
 
 // --------- USER CONFIG ----------
-static const char* WIFI_SSID = "newdahl";
-static const char* WIFI_PASS = "12345678";
+static const char* WIFI_SSID = "Fablab";
+static const char* WIFI_PASS = "11223344";
 
-static const char* MQTT_HOST = "192.168.87.133";  // Raspberry Pi
+static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
 
 static const char* GATE_ID = "stor_cnc";
@@ -263,7 +263,16 @@ void publishMachineActive(int v) {
 
 void setup() {
   Serial.begin(115200);
-  delay(300);
+  delay(1000);
+  
+  // Vent på serial forbindelse (max 3 sek)
+  for(int i = 0; i < 30 && !Serial; i++) {
+    delay(100);
+  }
+  
+  Serial.println("\n\n=== SPANSUG GATE START ===");
+  Serial.print("Gate ID: ");
+  Serial.println(GATE_ID);
 
   // Init NVS
   prefs.begin(NVS_NS, false); // read-write mode
