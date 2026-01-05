@@ -203,10 +203,33 @@
         const MQTT_BROKER = 'ws://spansug-backend.local:9001'; // WebSocket port
         const MQTT_TOPIC = 'spansug/#';
         
+        // Predefined gates
+        const PREDEFINED_GATES = [
+            { id: 'stor_cnc', name: 'Stor CNC' },
+            { id: 'lille_cnc', name: 'Lille CNC' },
+            { id: 'rundsav_auto', name: 'Rundsav Auto' },
+            { id: 'rundsav_manual', name: 'Rundsav Manual' },
+            { id: 'rondelsliber', name: 'Rondelsliber' }
+        ];
+        
         // State
         const gates = new Map();
         let vacuumActive = false;
         let client = null;
+        
+        // Initialize all predefined gates
+        function initializeGates() {
+            PREDEFINED_GATES.forEach(gate => {
+                gates.set(gate.id, {
+                    id: gate.id,
+                    name: gate.name,
+                    state: 'unknown',
+                    machine_active: false,
+                    lastUpdate: new Date()
+                });
+            });
+            renderGates();
+        }
         
         // Connect to MQTT
         function connectMQTT() {
@@ -264,9 +287,12 @@
             const gateId = parts[2];
             const property = parts[3];
             
+            // Initialize gate if not exists
             if (!gates.has(gateId)) {
+                const predefined = PREDEFINED_GATES.find(g => g.id === gateId);
                 gates.set(gateId, {
                     id: gateId,
+                    name: predefined ? predefined.name : formatGateId(gateId),
                     state: 'unknown',
                     machine_active: false,
                     lastUpdate: new Date()
@@ -310,20 +336,26 @@
         function renderGates() {
             const gridEl = document.getElementById('gates-grid');
             
-            if (gates.size === 0) {
-                gridEl.innerHTML = '<div class="no-data">Ingen gates fundet endnu...</div>';
-                return;
-            }
-            
             gridEl.innerHTML = '';
             
-            gates.forEach((gate, id) => {
+            // Sort gates by predefined order
+            const sortedGates = Array.from(gates.entries()).sort((a, b) => {
+                const indexA = PREDEFINED_GATES.findIndex(g => g.id === a[0]);
+                const indexB = PREDEFINED_GATES.findIndex(g => g.id === b[0]);
+                if (indexA === -1) return 1;
+                if (indexB === -1) return -1;
+                return indexA - indexB;
+            });
+            
+            sortedGates.forEach(([id, gate]) => {
                 const card = document.createElement('div');
                 card.className = 'gate-card';
                 
+                const displayName = gate.name || formatGateId(id);
+                
                 card.innerHTML = `
                     <div class="gate-header">
-                        <div class="gate-name">${formatGateId(id)}</div>
+                        <div class="gate-name">${displayName}</div>
                     </div>
                     <div class="gate-status">
                         <div class="status-row">
@@ -379,6 +411,7 @@
         }
         
         // Initialize
+        initializeGates();
         connectMQTT();
         
         // Update clock every second
