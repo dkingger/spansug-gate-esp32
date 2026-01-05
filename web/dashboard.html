@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spånsug Dashboard - FabLab</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .connection-status {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-connected {
+            background: #10b981;
+        }
+        
+        .status-disconnected {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .gates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .gate-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .gate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        
+        .gate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .gate-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .gate-status {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .badge-open {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-closed {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .badge-wait {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .badge-unknown {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .badge-active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .badge-inactive {
+            background: #9ca3af;
+            color: white;
+        }
+        
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 Spånsug Dashboard</h1>
+        
+        <div class="connection-status">
+            <div>
+                <span class="status-indicator" id="mqtt-indicator"></span>
+                <span id="mqtt-status">Forbinder...</span>
+            </div>
+            <div id="mqtt-server"></div>
+        </div>
+        
+        <div class="gates-grid" id="gates-grid">
+            <div class="no-data">Venter på data fra MQTT...</div>
+        </div>
+        
+        <div class="last-update" id="last-update"></div>
+    </div>
+
+    <script>
+        // MQTT Configuration
+        const MQTT_BROKER = 'ws://spansug-backend.local:9001'; // WebSocket port
+        const MQTT_TOPIC = 'spansug/gate/#';
+        
+        // State
+        const gates = new Map();
+        let client = null;
+        
+        // Connect to MQTT
+        function connectMQTT() {
+            updateStatus('Forbinder til MQTT...', false);
+            
+            client = mqtt.connect(MQTT_BROKER, {
+                clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8)
+            });
+            
+            client.on('connect', () => {
+                console.log('MQTT Connected');
+                updateStatus('Forbundet til MQTT', true);
+                document.getElementById('mqtt-server').textContent = MQTT_BROKER;
+                
+                client.subscribe(MQTT_TOPIC, (err) => {
+                    if (err) {
+                        console.error('Subscribe error:', err);
+                    } else {
+                        console.log('Subscribed to:', MQTT_TOPIC);
+                    }
+                });
+            });
+            
+            client.on('message', (topic, message) => {
+                handleMessage(topic, message.toString());
+            });
+            
+            client.on('error', (err) => {
+                console.error('MQTT Error:', err);
+                updateStatus('MQTT Fejl', false);
+            });
+            
+            client.on('close', () => {
+                updateStatus('MQTT Forbindelse lukket', false);
+                setTimeout(connectMQTT, 5000);
+            });
+        }
+        
+        function handleMessage(topic, payload) {
+            console.log('Message:', topic, payload);
+            
+            // Parse topic: spansug/gate/{gate_id}/{property}
+            const parts = topic.split('/');
+            if (parts.length !== 4 || parts[0] !== 'spansug' || parts[1] !== 'gate') {
+                return;
+            }
+            
+            const gateId = parts[2];
+            const property = parts[3];
+            
+            if (!gates.has(gateId)) {
+                gates.set(gateId, {
+                    id: gateId,
+                    state: 'unknown',
+                    machine_active: false,
+                    lastUpdate: new Date()
+                });
+            }
+            
+            const gate = gates.get(gateId);
+            
+            if (property === 'state') {
+                gate.state = payload.toLowerCase();
+            } else if (property === 'machine_active') {
+                gate.machine_active = payload === '1';
+            }
+            
+            gate.lastUpdate = new Date();
+            
+            renderGates();
+            updateLastUpdate();
+        }
+        
+        function updateStatus(message, connected) {
+            const statusEl = document.getElementById('mqtt-status');
+            const indicatorEl = document.getElementById('mqtt-indicator');
+            
+            statusEl.textContent = message;
+            indicatorEl.className = 'status-indicator ' + 
+                (connected ? 'status-connected' : 'status-disconnected');
+        }
+        
+        function renderGates() {
+            const gridEl = document.getElementById('gates-grid');
+            
+            if (gates.size === 0) {
+                gridEl.innerHTML = '<div class="no-data">Ingen gates fundet endnu...</div>';
+                return;
+            }
+            
+            gridEl.innerHTML = '';
+            
+            gates.forEach((gate, id) => {
+                const card = document.createElement('div');
+                card.className = 'gate-card';
+                
+                card.innerHTML = `
+                    <div class="gate-header">
+                        <div class="gate-name">${formatGateId(id)}</div>
+                    </div>
+                    <div class="gate-status">
+                        <div class="status-row">
+                            <span class="status-label">Spjæld:</span>
+                            <span class="status-badge ${getStateBadgeClass(gate.state)}">
+                                ${formatState(gate.state)}
+                            </span>
+                        </div>
+                        <div class="status-row">
+                            <span class="status-label">Maskine:</span>
+                            <span class="status-badge ${gate.machine_active ? 'badge-active' : 'badge-inactive'}">
+                                ${gate.machine_active ? 'Aktiv' : 'Inaktiv'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                gridEl.appendChild(card);
+            });
+        }
+        
+        function formatGateId(id) {
+            // Convert "stor_cnc" to "Stor CNC"
+            return id.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+        
+        function formatState(state) {
+            const states = {
+                'open': 'Åben',
+                'closed': 'Lukket',
+                'wait': 'Venter',
+                'unknown': 'Ukendt'
+            };
+            return states[state] || state;
+        }
+        
+        function getStateBadgeClass(state) {
+            const classes = {
+                'open': 'badge-open',
+                'closed': 'badge-closed',
+                'wait': 'badge-wait',
+                'unknown': 'badge-unknown'
+            };
+            return classes[state] || 'badge-unknown';
+        }
+        
+        function updateLastUpdate() {
+            const updateEl = document.getElementById('last-update');
+            const now = new Date();
+            updateEl.textContent = `Sidst opdateret: ${now.toLocaleTimeString('da-DK')}`;
+        }
+        
+        // Initialize
+        connectMQTT();
+        
+        // Update clock every second
+        setInterval(updateLastUpdate, 1000);
+    </script>
+</body>
+</html>

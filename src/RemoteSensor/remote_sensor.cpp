@@ -12,7 +12,7 @@ static const uint16_t MQTT_PORT = 1883;
 static const char* GATE_ID = "stor_cnc";  // SKIFT FOR HVER MASKINE!
 
 // GPIO pin til at læse CNC signal (pull down)
-static const int SIGNAL_PIN = 4;  // Tilpas til den pin du bruger
+static const int SIGNAL_PIN = 5;  // GPIO 5 er sikker på ESP32-C3
 
 // Debounce og timing
 static const uint32_t DEBOUNCE_MS = 100;
@@ -73,20 +73,44 @@ bool mqttConnect() {
 }
 
 void publishMachineState(bool active) {
+  Serial.println("\n=== PUBLISH START ===");
+  Serial.print("MQTT forbundet: ");
+  Serial.println(mqtt.connected() ? "JA" : "NEJ");
+  
   if (!mqtt.connected()) {
-    if (!mqttConnect()) return;
+    Serial.println("Ingen MQTT forbindelse, forsøger at forbinde...");
+    if (!mqttConnect()) {
+      Serial.println("MQTT reconnect FEJLEDE!");
+      return;
+    }
+    Serial.println("MQTT reconnect OK");
   }
 
   const char* payload = active ? "1" : "0";
   
-  if (mqtt.publish(topic_active.c_str(), payload, true)) {  // retained = true
+  Serial.print("Topic: ");
+  Serial.println(topic_active);
+  Serial.print("Payload: ");
+  Serial.println(payload);
+  Serial.print("Retained: true");
+  Serial.println();
+  
+  bool result = mqtt.publish(topic_active.c_str(), payload, true);
+  
+  Serial.print("Publish resultat: ");
+  Serial.println(result ? "SUCCESS" : "FAILED");
+  
+  if (result) {
     Serial.print("Published: ");
     Serial.print(topic_active);
     Serial.print(" = ");
     Serial.println(payload);
   } else {
-    Serial.println("MQTT publish fejl!");
+    Serial.println("MQTT publish FEJL!");
+    Serial.print("MQTT state: ");
+    Serial.println(mqtt.state());
   }
+  Serial.println("=== PUBLISH SLUT ===\n");
 }
 
 void setup() {
@@ -104,8 +128,9 @@ void setup() {
   Serial.print("Signal Pin: ");
   Serial.println(SIGNAL_PIN);
 
-  // Setup GPIO
-  pinMode(SIGNAL_PIN, INPUT);  // Pull down signal fra CNC
+  // Setup GPIO med pull-down
+  pinMode(SIGNAL_PIN, INPUT_PULLDOWN);  // Pull down aktiveret
+  Serial.println("Pin mode: INPUT_PULLDOWN aktiveret");
   
   // WiFi
   wifiConnect();
@@ -136,6 +161,16 @@ void loop() {
   // Læs signal med debounce
   bool currentSignal = digitalRead(SIGNAL_PIN);
   
+  // DEBUG: Print signal hver 5. sekund
+  static uint32_t lastDebugPrint = 0;
+  if (millis() - lastDebugPrint > 5000) {
+    lastDebugPrint = millis();
+    Serial.print("Pin ");
+    Serial.print(SIGNAL_PIN);
+    Serial.print(" = ");
+    Serial.println(currentSignal ? "HIGH" : "LOW");
+  }
+  
   if (currentSignal != lastSignalState) {
     lastDebounceTime = millis();
   }
@@ -143,10 +178,19 @@ void loop() {
   if ((millis() - lastDebounceTime) > DEBOUNCE_MS) {
     // Signal er stabilt, tjek om det har ændret sig
     if (currentSignal != lastSignalState) {
+      Serial.println("\n>>> PIN ÆNDRING DETEKTERET <<<");
+      Serial.print("Gammel værdi: ");
+      Serial.println(lastSignalState ? "HIGH" : "LOW");
+      Serial.print("Ny værdi: ");
+      Serial.println(currentSignal ? "HIGH" : "LOW");
+      
       lastSignalState = currentSignal;
       
       Serial.print("Signal ændret: ");
       Serial.println(currentSignal ? "HIGH (Aktiv)" : "LOW (Inaktiv)");
+      
+      Serial.print("Sender MQTT... MQTT connected: ");
+      Serial.println(mqtt.connected() ? "JA" : "NEJ");
       
       publishMachineState(currentSignal);
     }
