@@ -12,10 +12,11 @@ static const char* WIFI_PASS = "11223344";
 static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
 
-static const char* GATE_ID = "stor_cnc";
+static const char* GATE_ID = "rundsav_auto";
 
 // Topics
 static String topic_cmd    = String("spansug/gate/") + GATE_ID + "/cmd";
+static String topic_state  = String("spansug/gate/") + GATE_ID + "/state";
 static String topic_active = String("spansug/gate/") + GATE_ID + "/machine_active";
 
 // Pins
@@ -170,6 +171,17 @@ void moveTo(int deg) {
 }
 
 // --- Command handling ---
+void publishState() {
+  const char* stateStr = "unknown";
+  if (state == STATE_OPEN) stateStr = "open";
+  else if (state == STATE_CLOSED) stateStr = "closed";
+  else if (state == STATE_WAIT) stateStr = "wait";
+  
+  mqtt.publish(topic_state.c_str(), stateStr, true); // retained
+  Serial.print("Published state: ");
+  Serial.println(stateStr);
+}
+
 void handleCmd(String cmd) {
   cmd.trim();
   cmd.toUpperCase();
@@ -178,17 +190,20 @@ void handleCmd(String cmd) {
     moveTo(OPEN_DEG);
     state = STATE_OPEN;
     setLedForState(state);
-    saveState(); // Gem kun tilstand
+    saveState();
+    publishState();
   } else if (cmd == "WAIT") {
     // Venter/efterløb: ingen servo-bevægelse, kun blink
     state = STATE_WAIT;
     resetBlink();
-    saveState(); // Gem kun tilstand
+    saveState();
+    publishState();
   } else if (cmd == "CLOSE") {
     moveTo(CLOSE_DEG);
     state = STATE_CLOSED;
     setLedForState(state);
-    saveState(); // Gem kun tilstand
+    saveState();
+    publishState();
   } else {
     Serial.print("Ukendt cmd: ");
     Serial.println(cmd);
@@ -307,6 +322,7 @@ void setup() {
   mqttConnect();
 
   // publish initial state
+  publishState();
   publishMachineActive(lastSwitch == LOW ? 1 : 0);
 
   Serial.println("Klar. MQTT cmd: OPEN / WAIT / CLOSE + switch -> machine_active");

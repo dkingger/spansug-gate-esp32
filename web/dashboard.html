@@ -182,7 +182,13 @@
                 <span class="status-indicator" id="mqtt-indicator"></span>
                 <span id="mqtt-status">Forbinder...</span>
             </div>
-            <div id="mqtt-server"></div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div id="vacuum-status" style="font-weight: bold;">
+                    <span style="margin-right: 8px;">⚙️ Spånsug:</span>
+                    <span id="vacuum-state" class="status-badge badge-inactive">Ukendt</span>
+                </div>
+                <div id="mqtt-server"></div>
+            </div>
         </div>
         
         <div class="gates-grid" id="gates-grid">
@@ -195,10 +201,11 @@
     <script>
         // MQTT Configuration
         const MQTT_BROKER = 'ws://spansug-backend.local:9001'; // WebSocket port
-        const MQTT_TOPIC = 'spansug/gate/#';
+        const MQTT_TOPIC = 'spansug/#';
         
         // State
         const gates = new Map();
+        let vacuumActive = false;
         let client = null;
         
         // Connect to MQTT
@@ -241,6 +248,13 @@
         function handleMessage(topic, payload) {
             console.log('Message:', topic, payload);
             
+            // Check for vacuum status
+            if (topic === 'spansug/vacuum/active') {
+                vacuumActive = payload === '1';
+                updateVacuumStatus();
+                return;
+            }
+            
             // Parse topic: spansug/gate/{gate_id}/{property}
             const parts = topic.split('/');
             if (parts.length !== 4 || parts[0] !== 'spansug' || parts[1] !== 'gate') {
@@ -280,6 +294,17 @@
             statusEl.textContent = message;
             indicatorEl.className = 'status-indicator ' + 
                 (connected ? 'status-connected' : 'status-disconnected');
+        }
+        
+        function updateVacuumStatus() {
+            const vacuumEl = document.getElementById('vacuum-state');
+            if (vacuumActive) {
+                vacuumEl.textContent = 'Kører';
+                vacuumEl.className = 'status-badge badge-active';
+            } else {
+                vacuumEl.textContent = 'Stoppet';
+                vacuumEl.className = 'status-badge badge-inactive';
+            }
         }
         
         function renderGates() {
