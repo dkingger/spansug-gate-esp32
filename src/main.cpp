@@ -6,8 +6,8 @@
 #include <Preferences.h>
 
 // --------- USER CONFIG ----------
-static const char* WIFI_SSID = "Fablab";
-static const char* WIFI_PASS = "11223344";
+static const char* WIFI_SSID = "<DIT SSID>";
+static const char* WIFI_PASS = "<DIN KODE>";
 
 static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
