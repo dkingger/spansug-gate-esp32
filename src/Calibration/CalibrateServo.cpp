@@ -7,8 +7,8 @@
 #include <Preferences.h>
 
 // WiFi credentials
-const char* ssid = "newdahl";
-const char* password = "12345678";
+const char* ssid = "<DIT SSID>";
+const char* password = "<DIN KODE>";
 
 // Servo konfiguration
 static const int SERVO_PIN = 3;
