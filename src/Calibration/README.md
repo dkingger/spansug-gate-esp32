@@ -12,6 +12,14 @@ Firmwaren kører på en **ESP32-C3 SuperMini** og bruges til at:
 > ⚠️ Denne version indeholder **ingen MQTT endnu**  
 > Den er udelukkende til **mekanisk og elektrisk kalibrering**.
 
+> ⚙️ **VIGTIG OPSÆTNING**
+> Før upload skal du opdatere **WiFi og netværksindstillinger** i `CalibrateServo.cpp`:
+> - `ssid` - Dit WiFi netværksnavn
+> - `password` - Dit WiFi password
+> - `staticIP` - Fast IP-adresse (standard: 192.168.87.18)
+> - `gateway` - Gateway adresse (standard: 192.168.87.1)
+> - `subnet` - Subnet mask (standard: 255.255.255.0)
+
 ---
 
 ## Hardware

@@ -2,8 +2,19 @@
 
 Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-> 🔧 **Kalibrering**
+> ⚙️ **VIGTIG OPSÆTNING (MQTT firmware)**
+> Før upload skal du opdatere **WiFi credentials** i `src/main.cpp`:
+> - `WIFI_SSID` - Dit WiFi netværksnavn
+> - `WIFI_PASS` - Dit WiFi password
+> - `MQTT_HOST` - MQTT broker adresse (standard: `spansug-backend.local`)
+> - `GATE_ID` - Gate identifikator (f.eks. `rundsav_auto`)
+
+> 🔧 **VIGTIG OPSÆTNING (Kalibrering)**
 > Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`src/Calibration/`** og har sin egen `README.md`.
+> Før upload skal du opdatere i `src/Calibration/CalibrateServo.cpp`:
+> - `ssid` - Dit WiFi netværksnavn
+> - `password` - Dit WiFi password
+> - `staticIP`, `gateway`, `subnet` - Netværksindstillinger (standard: 192.168.87.18)
 
 ---
 
