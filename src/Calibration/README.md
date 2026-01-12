@@ -9,7 +9,7 @@ Firmwaren kører på en **ESP32-C3 SuperMini** og bruges til at:
 - Give **visuel status** via en WS2812B LED
 - Forberede hardware inden MQTT / backend-logik tilkobles
 
-> ⚠️ Denne version indeholder **ingen MQTT endnu**  
+> ⚠️ Denne version indeholder **ingen MQTT**  
 > Den er udelukkende til **mekanisk og elektrisk kalibrering**.
 
 > ⚙️ **VIGTIG OPSÆTNING**
