@@ -7,8 +7,8 @@
 #include <Preferences.h>
 
 // WiFi credentials
-const char* ssid = "<DIT SSID>";
-const char* password = "<DIN KODE>";
+const char* ssid = "YOUR ACCESS POINT SSID";
+const char* password = "YOUR ACCESS POINT PASSWORD";
 
 // Servo konfiguration
 static const int SERVO_PIN = 3;
@@ -50,7 +50,8 @@ String logBuffer = "";
 const int MAX_LOG_LINES = 50;
 
 void addLog(String msg) {
-  // Log only to internal buffer (no serial output)
+  // Log to both serial and internal buffer
+  Serial.println(msg);
   logBuffer += msg + "\n";
   // Begraens buffer stoerrelse
   int lineCount = 0;
@@ -345,7 +346,8 @@ void setupWebServer() {
 }
 
 void setup() {
-  // Serial output removed (web logging used instead)
+  // Serial init for debugging
+  Serial.begin(115200);
   delay(300);
 
   // NVS init + load persisted values (survives reboot/brownout)
