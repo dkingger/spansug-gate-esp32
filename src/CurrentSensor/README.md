@@ -52,6 +52,12 @@ Netspænding (230V) → Strømførende ledning gennem ZMCT103C "donut"
 - Indbygget sampling resistor og precision op-amp
 - Justerbar forstærkning via onboard potentiometer
 
+### Komplet Opstilling
+
+![Current Sensor Setup](../../images/currentsensor.png)
+
+*Diagram viser alle komponenter og forbindelser i current sensor systemet*
+
 ---
 
 ## 🔧 Konfiguration
