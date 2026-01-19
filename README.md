@@ -65,9 +65,11 @@ Raspberry Pi:
 
 ```
 /
-├── src/                # MQTT-firmware
-├── src/Calibration/    # Kalibreringskode (egen README)
-├── images/             # Diagrammer og fotos
+├── src/                  # MQTT-firmware (main gate controller)
+├── src/Calibration/      # Kalibreringskode (egen README)
+├── src/CurrentSensor/    # ZMCT103C strømmåler til automatisk gate-triggering
+├── src/RemoteSensor/     # Remote sensor implementationer
+├── images/               # Diagrammer og fotos
 ├── node-red/           # Node-RED flow (egen README)
 ├── platformio.ini      # Indeholder begge environments (MQTT og Calibration)
 └── README.md           # (denne fil)
@@ -248,13 +250,46 @@ Relay Manager bruger flow context til at tælle åbne gates.
 
 ---
 
+## Current Sensor - Automatisk Gate-triggering
+
+For maskiner uden elektronisk tænd/sluk-signal (f.eks. rondelsliber) kan vi bruge **strømmåling** til at detektere når maskinen kører.
+
+### Princip
+
+```
+Strømførende ledning → ZMCT103C sensor → ESP32-C3 → MQTT → Node-RED → Gate OPEN/CLOSE
+```
+
+1. **ZMCT103C** måler AC strøm gennem maskines netledning
+2. **ESP32-C3** beregner RMS og sammenligner med baseline
+3. Når strøm > baseline → Send `"1"` til MQTT topic
+4. **Node-RED** modtager og åbner tilhørende gate
+5. Når strøm < baseline → Send `"0"` og gate lukkes efter efterløb
+
+### Hardware Setup
+- **ESP32-C3 Super Mini** med WiFi + MQTT
+- **ZMCT103C Current Transformer** (5A max, 1000:1 ratio)
+- **Voltage divider** (10kΩ / 20kΩ) for GPIO beskyttelse
+- **Web interface** for baseline kalibrering (http://currentsensor.local)
+
+### Integration
+Systemet sender samme MQTT payload som remote sensors:
+```
+Topic: spansug/gate/rondelsliber/machine_active
+Payload: "1" (ON) eller "0" (OFF)
+```
+
+Se detaljeret dokumentation i [`src/CurrentSensor/README.md`](src/CurrentSensor/README.md)
+
+---
+
 ## Status
 
 * [x] MQTT-baseret gate-styring
 * [x] WS2812 status-LED
 * [x] Blinkende LED i ventefase (`WAIT`)
 * [x] Node-RED efterløbstid
-* [ ] CT clamp / strømsensor
+* [x] CT clamp / strømsensor (ZMCT103C implementation)
 * [x] Generisk gate-konfiguration
 * [x] Master-logik for spånsuger
 
