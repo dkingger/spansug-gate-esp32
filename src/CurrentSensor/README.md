@@ -66,8 +66,8 @@ Netspænding (230V) → Strømførende ledning gennem ZMCT103C "donut"
 
 ```cpp
 // WiFi credentials
-const char* ssid = "Fablab";
-const char* password = "11223344";
+const char* ssid = "NETVÆRKS SSID";
+const char* password = "NETVÆRKS PASSWORD";
 
 // MQTT Broker
 const char* mqtt_broker = "spansug-backend.local";
