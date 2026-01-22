@@ -21,12 +21,12 @@ Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af
 ## Overordnet arkitektur
 
 ```
-[ Maskine 1 ]     [ Maskine 2 ]     [ Maskine 3 ]
-    │                 │                 │
-    ▼                 ▼                 ▼
-[ ESP32-gate1 ]   [ ESP32-gate2 ]   [ ESP32-gate3 ]
-    │                 │                 │
-    └─────────────────┼─────────────────┘
+[ Maskine 1 ]     [ Maskine 2 ]     [ Maskine 3 ]     [ Maskine 4 ]
+    │                 │                 │                 │
+    ▼                 ▼                 ▼                 ▼
+[ ESP32-gate1 ]   [ ESP32-gate2 ]   [ ESP32-gate3 ]   [ ESP32-gate4 ]
+    │                 │                 │                 │
+    └─────────────────┼─────────────────┼─────────────────┘
                       │
                     MQTT
                       │
@@ -36,17 +36,17 @@ Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af
           ┌───────────┼───────────┐
           ▼           ▼           ▼
      Automatiske   Manuel      Relay Manager
-      Gates (3)    Gate (1)    (KRITISK - 1)
+      Gates (5)    Gate (1)    (KRITISK - 1)
           │           │           │
           └───────────┼───────────┘
                       │
                       ▼
-             [ GPIO 12 Relay ]
+             [ GPIO 18 Relay ]
             (Spånsuger motor)
 
 Raspberry Pi:
 - Mosquitto (MQTT broker)
-- Node-RED (5 flows: 3 auto gates + 1 manual + 1 relay manager)
+- Node-RED (7 flows: 5 auto gates + 1 manual + 1 relay manager)
 ```
 
 **Princip:**
@@ -174,18 +174,20 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 5 integrerede flows.
 
-### 5 Flows arbetar sammen
+### 7 Flows arbetar sammen
 
 **Automatiske gates (med servo-kontrol):**
-- `spansug-gate-rundsav_auto.json` – Rundsav
+- `spansug-gate-rundsav_auto.json` – Rundsav Auto
 - `spansug-gate-stor_cnc.json` – Stor CNC
 - `spansug-gate-lille_cnc.json` – Lille CNC
+- `spansug-rondelsliber-flow.json` – Rondelsliber
+- `spansug-gate-baandsliber.json` – Båndsliberen
 
 **Manuel gate (kun sensor):**
-- `spansug-gate-rundsav_manual.json` – Rundsav manuel
+- `spansug-gate-rundsav_manual.json` – Rundsav Manual
 
 **KRITISK – Central relay koordinering:**
-- `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren
+- `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren (GPIO 18)
 
 ### Flow-princip (automatiske gates)
 
@@ -240,11 +242,13 @@ Relay Manager bruger flow context til at tælle åbne gates.
 3. `stor_cnc` lukker → sendes kommando til relæ OFF
 4. **Problem:** Relæ slukkes selv om `rundsav_auto` stadig er åbent!
 5. Spånsuger stopper mens der stadig arbejdes ❌
-
-**Med central Relay Manager (RIGTIGT ✓):**
-1. `stor_cnc` åbner → Manager tæller 1 gate åbent → relæ ON
+ (GPIO 18)
 2. `rundsav_auto` åbner → Manager tæller 2 gates åbne → relæ forbliver ON
 3. `stor_cnc` lukker → Manager tæller 1 gate åbent → relæ forbliver ON ✓
+4. `rundsav_auto` lukker → Manager tæller 0 gates åbne → relæ OFF
+5. Spånsuger stopper først når alle arbejder er færdige ✓
+
+Relay Manager publicerer også vacuum status til MQTT (`spansug/vacuum/active`) for brug i dashboards. forbliver ON ✓
 4. `rundsav_auto` lukker → Manager tæller 0 gates åbne → relæ OFF
 5. Spånsuger stopper først når alle arbejder er færdige ✓
 

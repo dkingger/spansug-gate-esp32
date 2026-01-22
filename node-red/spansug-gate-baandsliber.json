@@ -1,18 +1,18 @@
 [
     {
-        "id": "rondelsliber_flow",
+        "id": "baandsliber_flow",
         "type": "tab",
-        "label": "Rondelsliber Gate",
+        "label": "Båndsliberen Gate",
         "disabled": false,
-        "info": "Gate controller for rondelsliber with variable afterrun delay and relay control",
+        "info": "Gate controller for baandsliber with variable afterrun delay and relay control",
         "env": []
     },
     {
-        "id": "mqtt_in_rondelsliber",
+        "id": "mqtt_in_baandsliber",
         "type": "mqtt in",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
-        "topic": "spansug/gate/rondelsliber/machine_active",
+        "topic": "spansug/gate/baandsliber/machine_active",
         "qos": "2",
         "datatype": "auto-detect",
         "broker": "675a7eb26a300987",
@@ -24,14 +24,14 @@
         "y": 320,
         "wires": [
             [
-                "switch_rondelsliber"
+                "switch_baandsliber"
             ]
         ]
     },
     {
-        "id": "switch_rondelsliber",
+        "id": "switch_baandsliber",
         "type": "switch",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
         "property": "payload",
         "propertyType": "msg",
@@ -54,18 +54,18 @@
         "y": 320,
         "wires": [
             [
-                "change_open_rondelsliber"
+                "change_open_baandsliber"
             ],
             [
-                "change_wait_rondelsliber",
-                "function_delay_rondelsliber"
+                "change_wait_baandsliber",
+                "function_delay_baandsliber"
             ]
         ]
     },
     {
-        "id": "change_open_rondelsliber",
+        "id": "change_open_baandsliber",
         "type": "change",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "OPEN",
         "rules": [
             {
@@ -85,16 +85,15 @@
         "y": 220,
         "wires": [
             [
-                "mqtt_out_open_rondelsliber",
-                "change_reset_timer_rondelsliber",
-                "debug_open_rondelsliber"
+                "mqtt_out_open_baandsliber",
+                "change_reset_timer_baandsliber"
             ]
         ]
     },
     {
-        "id": "change_close_rondelsliber",
+        "id": "change_close_baandsliber",
         "type": "change",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "CLOSE",
         "rules": [
             {
@@ -114,15 +113,14 @@
         "y": 340,
         "wires": [
             [
-                "mqtt_out_close_rondelsliber",
-                "debug_close_rondelsliber"
+                "mqtt_out_close_baandsliber"
             ]
         ]
     },
     {
-        "id": "inject_delay_rondelsliber",
+        "id": "inject_delay_baandsliber",
         "type": "inject",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "Lukke-delay (sek)",
         "props": [
             {
@@ -134,20 +132,20 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "10",
+        "payload": "20",
         "payloadType": "num",
         "x": 210,
         "y": 140,
         "wires": [
             [
-                "change_store_delay_rondelsliber"
+                "change_store_delay_baandsliber"
             ]
         ]
     },
     {
-        "id": "change_store_delay_rondelsliber",
+        "id": "change_store_delay_baandsliber",
         "type": "change",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
         "rules": [
             {
@@ -170,9 +168,9 @@
         ]
     },
     {
-        "id": "function_delay_rondelsliber",
+        "id": "function_delay_baandsliber",
         "type": "function",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "function 1",
         "func": "const s = Number(flow.get(\"lukke_delay\") || 20);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
         "outputs": 1,
@@ -185,14 +183,14 @@
         "y": 340,
         "wires": [
             [
-                "delay_rondelsliber"
+                "delay_baandsliber"
             ]
         ]
     },
     {
-        "id": "delay_rondelsliber",
+        "id": "delay_baandsliber",
         "type": "delay",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
         "pauseType": "delayv",
         "timeout": "5",
@@ -210,16 +208,16 @@
         "y": 340,
         "wires": [
             [
-                "change_close_rondelsliber"
+                "change_close_baandsliber"
             ]
         ]
     },
     {
-        "id": "mqtt_out_close_rondelsliber",
+        "id": "mqtt_out_close_baandsliber",
         "type": "mqtt out",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
-        "topic": "spansug/gate/rondelsliber/cmd",
+        "topic": "spansug/gate/baandsliber/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -233,11 +231,11 @@
         "wires": []
     },
     {
-        "id": "mqtt_out_open_rondelsliber",
+        "id": "mqtt_out_open_baandsliber",
         "type": "mqtt out",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
-        "topic": "spansug/gate/rondelsliber/cmd",
+        "topic": "spansug/gate/baandsliber/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -247,13 +245,13 @@
         "expiry": "",
         "broker": "675a7eb26a300987",
         "x": 930,
-        "y": 200,
+        "y": 180,
         "wires": []
     },
     {
-        "id": "change_reset_timer_rondelsliber",
+        "id": "change_reset_timer_baandsliber",
         "type": "change",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "Reset lukke-timer",
         "rules": [
             {
@@ -273,46 +271,14 @@
         "y": 260,
         "wires": [
             [
-                "delay_rondelsliber"
+                "delay_baandsliber"
             ]
         ]
     },
     {
-        "id": "debug_close_rondelsliber",
-        "type": "debug",
-        "z": "rondelsliber_flow",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1340,
-        "y": 260,
-        "wires": []
-    },
-    {
-        "id": "debug_open_rondelsliber",
-        "type": "debug",
-        "z": "rondelsliber_flow",
-        "name": "debug 2",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 860,
-        "y": 140,
-        "wires": []
-    },
-    {
-        "id": "change_wait_rondelsliber",
+        "id": "change_wait_baandsliber",
         "type": "change",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "WAIT",
         "rules": [
             {
@@ -329,20 +295,19 @@
         "to": "",
         "reg": false,
         "x": 690,
-        "y": 440,
+        "y": 480,
         "wires": [
             [
-                "mqtt_out_wait_rondelsliber",
-                "debug_wait_rondelsliber"
+                "mqtt_out_wait_baandsliber"
             ]
         ]
     },
     {
-        "id": "mqtt_out_wait_rondelsliber",
+        "id": "mqtt_out_wait_baandsliber",
         "type": "mqtt out",
-        "z": "rondelsliber_flow",
+        "z": "baandsliber_flow",
         "name": "",
-        "topic": "spansug/gate/rondelsliber/cmd",
+        "topic": "spansug/gate/baandsliber/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -351,24 +316,8 @@
         "correl": "",
         "expiry": "",
         "broker": "675a7eb26a300987",
-        "x": 1410,
-        "y": 440,
-        "wires": []
-    },
-    {
-        "id": "debug_wait_rondelsliber",
-        "type": "debug",
-        "z": "rondelsliber_flow",
-        "name": "debug 3",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 880,
-        "y": 500,
+        "x": 910,
+        "y": 520,
         "wires": []
     },
     {
@@ -401,5 +350,13 @@
         "willMsg": {},
         "userProps": "",
         "sessionExpiry": ""
+    },
+    {
+        "id": "4af0fbaffc0d8e81",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-pi-gpio": "2.0.6"
+        }
     }
 ]

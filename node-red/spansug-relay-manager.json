@@ -66,7 +66,8 @@
         "wires": [
             [
                 "debug_relay_state",
-                "relay_output"
+                "relay_output",
+                "mqtt_vacuum_status"
             ]
         ]
     },
@@ -92,7 +93,7 @@
         "type": "rpi-gpio out",
         "z": "relay_manager_flow",
         "name": "Dust collector relay",
-        "pin": "12",
+        "pin": "18",
         "set": "",
         "level": "0",
         "freq": "",
@@ -100,6 +101,24 @@
         "bcm": true,
         "x": 660,
         "y": 130,
+        "wires": []
+    },
+    {
+        "id": "mqtt_vacuum_status",
+        "type": "mqtt out",
+        "z": "relay_manager_flow",
+        "name": "Publish vacuum status",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 680,
+        "y": 180,
         "wires": []
     },
     {
