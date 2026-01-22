@@ -209,13 +209,15 @@
             { id: 'lille_cnc', name: 'Lille CNC' },
             { id: 'rundsav_auto', name: 'Rundsav Auto' },
             { id: 'rundsav_manual', name: 'Rundsav Manual' },
-            { id: 'rondelsliber', name: 'Rondelsliber' }
+            { id: 'rondelsliber', name: 'Rondelsliber', hasSensor: true },
+            { id: 'baandsliber', name: 'Båndsliberen' }
         ];
         
         // State
         const gates = new Map();
         let vacuumActive = false;
         let client = null;
+        let sensorTimeouts = new Map(); // Track sensor activity
         
         // Initialize all predefined gates
         function initializeGates() {
@@ -223,6 +225,8 @@
                 gates.set(gate.id, {
                     id: gate.id,
                     name: gate.name,
+                    hasSensor: gate.hasSensor || false,
+                    sensorConnected: gate.hasSensor ? false : undefined,
                     state: 'unknown',
                     machine_active: false,
                     lastUpdate: new Date()
@@ -301,6 +305,45 @@
             
             const gate = gates.get(gateId);
             
+            if (property === 'heartbeat' && gate.hasSensor) {
+                // Heartbeat from external sensor - mark as connected
+                gate.sensorConnected = true;
+                
+                // Clear existing timeout
+                if (sensorTimeouts.has(gateId)) {
+                    clearTimeout(sensorTimeouts.get(gateId));
+                }
+                
+                // Set timeout to mark sensor as offline after 10 seconds
+                const timeout = setTimeout(() => {
+                    gate.sensorConnected = false;
+                    renderGates();
+                }, 10000);
+                
+                sensorTimeouts.set(gateId, timeout);
+                renderGates();
+                updateLastUpdate();
+                return;
+            }
+                
+            // If gate has external sensor, track activity on machine_active too
+            if (property === 'machine_active' && gate.hasSensor) {
+                gate.sensorConnected = true;
+                
+                // Clear existing timeout
+                if (sensorTimeouts.has(gateId)) {
+                    clearTimeout(sensorTimeouts.get(gateId));
+                }
+                
+                // Set timeout to mark sensor as offline after 10 seconds
+                const timeout = setTimeout(() => {
+                    gate.sensorConnected = false;
+                    renderGates();
+                }, 10000);
+                
+                sensorTimeouts.set(gateId, timeout);
+            }
+            
             if (property === 'state') {
                 gate.state = payload.toLowerCase();
             } else if (property === 'machine_active') {
@@ -370,6 +413,14 @@
                                 ${gate.machine_active ? 'Aktiv' : 'Inaktiv'}
                             </span>
                         </div>
+                        ${gate.sensorConnected !== undefined ? `
+                        <div class="status-row">
+                            <span class="status-label">Sensor:</span>
+                            <span class="status-badge ${gate.sensorConnected ? 'badge-active' : 'badge-inactive'}">
+                                ${gate.sensorConnected ? '✓ Forbundet' : '✗ Offline'}
+                            </span>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
                 

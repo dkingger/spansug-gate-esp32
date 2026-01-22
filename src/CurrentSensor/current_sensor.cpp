@@ -14,6 +14,7 @@ const char* mqtt_broker = "spansug-backend.local";
 const int mqtt_port = 1883;
 const char* mqtt_topic_status = "spansug/gate/rondelsliber/machine_active";
 const char* mqtt_topic_current = "spansug/gate/rondelsliber/current";
+const char* mqtt_topic_heartbeat = "spansug/gate/rondelsliber/heartbeat";
 
 // Pin definitions
 #define CURRENT_SENSOR_PIN 4  // Analog pin for ZMCT103C Signal Out
@@ -45,6 +46,8 @@ Preferences preferences;
 
 unsigned long lastReadTime = 0;
 const unsigned long readInterval = 1000; // Read every second
+unsigned long lastPublishTime = 0;
+const unsigned long publishInterval = 5000; // Publish status every 5 seconds
 
 // Machine state detection
 float baselineCurrent = 0.1; // Default baseline in Amperes
@@ -312,7 +315,7 @@ void loop() {
       newState = current > (baselineCurrent + hysteresis);
     }
     
-    // If state changed, send MQTT message
+    // If state changed, send MQTT message immediately
     if (newState != machineIsOn) {
       machineIsOn = newState;
       String status = machineIsOn ? "1" : "0";
@@ -325,8 +328,19 @@ void loop() {
       // Also publish current reading
       String payload = String(current, 3);
       client.publish(mqtt_topic_current, payload.c_str());
+      
+      lastPublishTime = currentTime; // Reset publish timer
     } else {
       Serial.println(machineIsOn ? "ON" : "OFF");
+    }
+    
+    // Periodic heartbeat - send on separate topic to not trigger flows
+    if (currentTime - lastPublishTime >= publishInterval) {
+      // Send heartbeat on dedicated topic (for dashboard connectivity check)
+      client.publish(mqtt_topic_heartbeat, "alive");
+      
+      lastPublishTime = currentTime;
+      Serial.print(" [HEARTBEAT]");
     }
   }
 }
