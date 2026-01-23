@@ -70,9 +70,13 @@ Raspberry Pi:
 ├── src/CurrentSensor/    # ZMCT103C strømmåler til automatisk gate-triggering
 ├── src/RemoteSensor/     # Remote sensor implementationer
 ├── images/               # Diagrammer og fotos
-├── node-red/           # Node-RED flow (egen README)
-├── platformio.ini      # Indeholder begge environments (MQTT og Calibration)
-└── README.md           # (denne fil)
+├── node-red/             # Node-RED flow (egen README)
+├── web/                  # Web dashboard filer
+├── deploy-to-pi.ps1      # Deploy script (Windows → Raspberry Pi)
+├── install-pi.sh         # Installations script (kør på Raspberry Pi)
+├── debug-backend.sh      # Diagnosticerings script til backend
+├── platformio.ini        # Indeholder begge environments (MQTT og Calibration)
+└── README.md             # (denne fil)
 ```
 
 ---
@@ -284,6 +288,103 @@ Payload: "1" (ON) eller "0" (OFF)
 ```
 
 Se detaljeret dokumentation i [`src/CurrentSensor/README.md`](src/CurrentSensor/README.md)
+
+---
+
+## Raspberry Pi Backend Setup
+
+Systemet kræver en Raspberry Pi med følgende services:
+- **Mosquitto** (MQTT broker)
+- **Node-RED** (styrelogik)
+- **Apache/Nginx** (web server til dashboard)
+
+### Quick Start: Opsætning af ny Raspberry Pi
+
+#### 1. Forbered Raspberry Pi
+1. Flash Raspberry Pi OS (Lite eller Desktop) med Raspberry Pi Imager
+2. Aktiver SSH under avancerede indstillinger
+3. Sæt brugernavn og password (f.eks. `pi` / `raspberry`)
+4. Indsæt SD-kort og boot Pi'en
+5. Find Pi'ens IP-adresse (tjek din router eller brug `arp -a`)
+
+#### 2. Deploy filer fra Windows
+Opdater IP-adresse, brugernavn og password i `deploy-to-pi.ps1`, derefter kør:
+```powershell
+.\deploy-to-pi.ps1
+```
+
+Dette kopierer:
+- Node-RED flows
+- Web dashboard filer
+- Installations script
+
+#### 3. Installer backend på Raspberry Pi
+SSH til Pi'en:
+```bash
+ssh pi@<IP-ADRESSE>
+```
+
+Kør installations scriptet:
+```bash
+cd ~/spansug-backend
+bash install-pi.sh
+```
+
+Scriptet installerer og konfigurerer automatisk:
+- ✅ Mosquitto MQTT broker (port 1883)
+- ✅ Node-RED med nødvendige nodes (port 1880)
+- ✅ Apache web server (port 80)
+- ✅ Hostname: `spansug-backend.local`
+- ✅ Avahi daemon til .local DNS
+
+#### 4. Importer Node-RED flows
+1. Åbn Node-RED editor: `http://<IP-ADRESSE>:1880`
+2. Klik på menu (☰) → Import
+3. Vælg "select a file to import"
+4. Importer alle `.json` filer fra `~/spansug-backend/node-red/`:
+   - `spansug-gate-rundsav_auto.json`
+   - `spansug-gate-stor_cnc.json`
+   - `spansug-gate-lille_cnc.json`
+   - `spansug-gate-rundsav_manual.json`
+   - `spansug-relay-manager.json`
+   - `spansug-rondelsliber-flow.json`
+   - `spansug-gate-baandsliber.json`
+5. Klik **Deploy** (øverst til højre)
+
+#### 5. Verificer installation
+Kør diagnosticerings script:
+```bash
+~/spansug-backend/debug-backend.sh
+```
+
+Tjek at alle services kører:
+- Mosquitto: `sudo systemctl status mosquitto`
+- Node-RED: `sudo systemctl status nodered`
+- Apache: `sudo systemctl status apache2`
+
+#### 6. Test systemet
+- **Node-RED editor**: `http://<IP-ADRESSE>:1880`
+- **Dashboard**: `http://<IP-ADRESSE>/dashboard.html`
+- **MQTT broker**: `<IP-ADRESSE>:1883`
+- **Hostname**: `http://spansug-backend.local:1880`
+
+Test MQTT kommunikation:
+```bash
+# Subscribe til alle topics
+mosquitto_sub -h 127.0.0.1 -t "spansug/#" -v
+
+# Test kommando (i anden terminal)
+mosquitto_pub -h 127.0.0.1 -t "spansug/gate/test/cmd" -m "OPEN"
+```
+
+### Opdatering af eksisterende backend
+Hvis du skal opdatere en kørende backend:
+```powershell
+# Fra Windows
+.\deploy-to-pi.ps1
+
+# På Raspberry Pi - genimporter opdaterede flows i Node-RED editor
+```
 
 ---
 
