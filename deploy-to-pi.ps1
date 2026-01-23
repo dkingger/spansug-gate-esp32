@@ -1,12 +1,39 @@
 # Deploy script til Raspberry Pi backend
 # Kører fra Windows til Raspberry Pi
 
-$PI_IP = "192.168.87.110"
-$PI_USER = "pi"
-$PI_PASS = "raspberry"
+$PI_IP = "192.168.87.110" # indsæt din Raspberry Pi's IP adresse
+$PI_USER = "pi" # standard bruger på Raspberry Pi
+$PI_PASS = "raspberry" # standard password på Raspberry Pi (ændr hvis nødvendigt)
 
 Write-Host "=== Deploy til Raspberry Pi Backend ===" -ForegroundColor Cyan
 Write-Host "IP: $PI_IP" -ForegroundColor Yellow
+
+# Tjek om SSH key findes, ellers opret og kopier til Pi
+$sshKeyPath = "$env:USERPROFILE\.ssh\id_rsa"
+if (-not (Test-Path $sshKeyPath)) {
+    Write-Host "`nIngen SSH key fundet. Opretter ny SSH key..." -ForegroundColor Yellow
+    ssh-keygen -t rsa -b 4096 -f $sshKeyPath -N '""' -q
+    Write-Host "SSH key oprettet!" -ForegroundColor Green
+}
+
+# Tjek om key allerede er kopieret til Pi
+Write-Host "`nTjekker SSH key authentication..." -ForegroundColor Green
+ssh -o BatchMode=yes -o ConnectTimeout=5 ${PI_USER}@${PI_IP} "echo 'Key auth OK'" 2>$null
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "SSH key ikke fundet på Pi. Kopierer key..." -ForegroundColor Yellow
+    Write-Host "Du bliver bedt om password én gang for at sætte key-based auth op." -ForegroundColor Yellow
+    
+    # Kopier SSH key til Pi
+    type $sshKeyPath.pub | ssh ${PI_USER}@${PI_IP} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "SSH key kopieret! Fremtidige forbindelser kræver ikke password." -ForegroundColor Green
+    } else {
+        Write-Host "FEJL: Kunne ikke kopiere SSH key" -ForegroundColor Red
+        exit 1
+    }
+}
 
 # Test SSH forbindelse
 Write-Host "`nTester SSH forbindelse..." -ForegroundColor Green
