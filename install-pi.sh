@@ -26,6 +26,9 @@ echo -e "${GREEN}Konfigurerer Mosquitto...${NC}"
 sudo tee /etc/mosquitto/conf.d/local.conf > /dev/null <<EOF
 listener 1883
 allow_anonymous true
+
+listener 9001
+protocol websockets
 EOF
 
 sudo systemctl enable mosquitto
@@ -91,7 +94,8 @@ echo ""
 echo -e "${YELLOW}Adgang til services:${NC}"
 echo "- Node-RED editor: http://192.168.87.110:1880"
 echo "- Dashboard: http://192.168.87.110/dashboard.html"
-echo "- MQTT broker: 192.168.87.110:1883"
+echo "- MQTT broker: 192.168.87.110:1883 (ESP32)"
+echo "- MQTT WebSocket: 192.168.87.110:9001 (Dashboard)"
 echo "- Hostname: spansug-backend.local"
 echo ""
 echo -e "${YELLOW}Næste skridt:${NC}"
