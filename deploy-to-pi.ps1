@@ -1,11 +1,19 @@
 # Deploy script til Raspberry Pi backend
 # Kører fra Windows til Raspberry Pi
 
+param(
+    [switch]$QuickUpdate = $false
+)
+
 $PI_IP = "192.168.87.110" # indsæt din Raspberry Pi's IP adresse
 $PI_USER = "pi" # standard bruger på Raspberry Pi
 $PI_PASS = "raspberry" # standard password på Raspberry Pi (ændr hvis nødvendigt)
 
-Write-Host "=== Deploy til Raspberry Pi Backend ===" -ForegroundColor Cyan
+if ($QuickUpdate) {
+    Write-Host "=== Quick Update til Raspberry Pi ===" -ForegroundColor Cyan
+} else {
+    Write-Host "=== Deploy til Raspberry Pi Backend ===" -ForegroundColor Cyan
+}
 Write-Host "IP: $PI_IP" -ForegroundColor Yellow
 
 # Tjek om SSH key findes, ellers opret og kopier til Pi
