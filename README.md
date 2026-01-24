@@ -2,18 +2,31 @@
 
 Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
+> ⚙️ **VIGTIG OPSÆTNING - WiFi Credentials**
+> 
+> WiFi-credentials gemmes i en lokal fil der IKKE commites til GitHub:
+> 
+> 1. Kopiér template-filen:
+>    ```bash
+>    cp src/secrets.h.example src/secrets.h
+>    ```
+> 2. Redigér `src/secrets.h` med dine credentials:
+>    ```cpp
+>    #define WIFI_SSID "dit_wifi_navn"
+>    #define WIFI_PASSWORD "dit_wifi_password"
+>    ```
+> 
+> Filen `src/secrets.h` er i `.gitignore` og vil ikke blive pushet til GitHub.
+
 > ⚙️ **VIGTIG OPSÆTNING (MQTT firmware)**
-> Før upload skal du opdatere **WiFi credentials** i `src/main.cpp`:
-> - `WIFI_SSID` - Dit WiFi netværksnavn
-> - `WIFI_PASS` - Dit WiFi password
+> Før upload skal du opdatere i `src/main.cpp`:
 > - `MQTT_HOST` - MQTT broker adresse (standard: `spansug-backend.local`)
 > - `GATE_ID` - Gate identifikator (f.eks. `rundsav_auto`)
 
 > 🔧 **VIGTIG OPSÆTNING (Kalibrering)**
 > Kalibreringskode (servo + WS2812 uden MQTT) ligger i mappen **`src/Calibration/`** og har sin egen `README.md`.
-> Før upload skal du opdatere i `src/Calibration/CalibrateServo.cpp`:
-> - `ssid` - Dit WiFi netværksnavn
-> - `password` - Dit WiFi password
+> WiFi-credentials bruges fra `src/secrets.h` (samme fil som MQTT firmware).
+> Netværksindstillinger i `src/Calibration/CalibrateServo.cpp`:
 > - `staticIP`, `gateway`, `subnet` - Netværksindstillinger (standard: 192.168.87.18)
 
 ---
