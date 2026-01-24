@@ -11,7 +11,7 @@
         "type": "rpi-gpio in",
         "z": "emergency_stop_flow",
         "name": "Emergency Stop Button",
-        "pin": "17",
+        "pin": "23",
         "intype": "up",
         "debounce": "25",
         "read": true,
