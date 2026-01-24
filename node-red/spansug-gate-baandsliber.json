@@ -2,7 +2,7 @@
     {
         "id": "baandsliber_flow",
         "type": "tab",
-        "label": "Båndsliberen Gate",
+        "label": "Båndsliber Gate",
         "disabled": false,
         "info": "Gate controller for baandsliber with variable afterrun delay and relay control",
         "env": []

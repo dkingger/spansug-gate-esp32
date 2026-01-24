@@ -2,7 +2,7 @@
     {
         "id": "rundsav_flow",
         "type": "tab",
-        "label": "Rundsav Auto Gate",
+        "label": "Rundsav Gate",
         "disabled": false,
         "info": "Gate controller for rundsav with variable afterrun delay and relay control",
         "env": []

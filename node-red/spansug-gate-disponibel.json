@@ -1,10 +1,10 @@
 [
     {
-        "id": "manual_gate_rundsav",
+        "id": "disponibel_gate",
         "type": "tab",
-        "label": "Rundsav Manual Gate",
+        "label": "Disponibel Gate",
         "disabled": false,
-        "info": "Manual gate status sensor for rundsav - reports gate position to MQTT",
+        "info": "Manual gate status sensor for disponibel - reports gate position to MQTT",
         "env": []
     },
     {
