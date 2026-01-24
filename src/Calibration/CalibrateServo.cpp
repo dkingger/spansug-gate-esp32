@@ -7,8 +7,8 @@
 #include <Preferences.h>
 
 // WiFi credentials
-const char* ssid = "YOUR ACCESS POINT SSID";
-const char* password = "YOUR ACCESS POINT PASSWORD";
+const char* ssid = "newdahl";
+const char* password = "12345678";
 
 // Servo konfiguration
 static const int SERVO_PIN = 3;
@@ -346,9 +346,15 @@ void setupWebServer() {
 }
 
 void setup() {
-  // Serial init for debugging
+  // Serial init for debugging (ESP32-C3 USB CDC)
   Serial.begin(115200);
-  delay(300);
+  delay(1000);
+  while (!Serial && millis() < 3000) { 
+    delay(10); 
+  }
+  
+  Serial.println("\n\n=== ESP32 Calibration Starting ===");
+  Serial.println("Firmware version: 1.0");
 
   // NVS init + load persisted values (survives reboot/brownout)
   prefs.begin(NVS_NS, false);
