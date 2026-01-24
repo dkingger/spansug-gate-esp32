@@ -30,7 +30,7 @@
         "type": "function",
         "z": "emergency_stop_flow",
         "name": "Detect Button Press & Close All Gates",
-        "func": "// Kun når button trykkes (LOW = 0 med pull-up)\nif (msg.payload === 0 || msg.payload === \"0\") {\n    \n    var gates = [\n        \"rundsav\",\n        \"rundsav_manual\",\n        \"stor_cnc\",\n        \"lille_cnc\",\n        \"rondelsliber\",\n        \"baandsliber\"\n    ];\n    \n    var messages = [];\n    \n    // Send CLOSE kommando til hver gate\n    for (var i = 0; i < gates.length; i++) {\n        messages.push({\n            topic: \"spansug/gate/\" + gates[i] + \"/cmd\",\n            payload: \"CLOSE\"\n        });\n    }\n    \n    // Log event\n    node.warn(\"🛑 EMERGENCY STOP - Lukker alle gates!\");\n    \n    return [messages];\n}\n\nreturn null;",
+        "func": "// Kun når button trykkes (LOW = 0 med pull-up)\nif (msg.payload === 0 || msg.payload === \"0\") {\n    \n    var gates = [\n        \"rundsav\",\n        \"disponibel\",\n        \"stor_cnc\",\n        \"lille_cnc\",\n        \"rondelsliber\",\n        \"baandsliber\"\n    ];\n    \n    var messages = [];\n    \n    // Send CLOSE kommando til hver gate\n    for (var i = 0; i < gates.length; i++) {\n        messages.push({\n            topic: \"spansug/gate/\" + gates[i] + \"/cmd\",\n            payload: \"CLOSE\"\n        });\n    }\n    \n    // Log event\n    node.warn(\"🛑 EMERGENCY STOP - Lukker alle gates!\");\n    \n    return [messages];\n}\n\nreturn null;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",

@@ -8,7 +8,7 @@
         "env": []
     },
     {
-        "id": "gpio_input_rundsav_manual",
+        "id": "gpio_input_disponibel",
         "type": "rpi-gpio in",
         "z": "manual_gate_rundsav",
         "name": "Gate position sensor",
@@ -116,7 +116,7 @@
         "type": "mqtt out",
         "z": "manual_gate_rundsav",
         "name": "",
-        "topic": "spansug/gate/rundsav_manual/status",
+        "topic": "spansug/gate/disponibel/status",
         "qos": "1",
         "retain": "true",
         "respTopic": "",
@@ -134,7 +134,7 @@
         "type": "mqtt out",
         "z": "manual_gate_rundsav",
         "name": "",
-        "topic": "spansug/gate/rundsav_manual/status",
+        "topic": "spansug/gate/disponibel/status",
         "qos": "1",
         "retain": "true",
         "respTopic": "",
@@ -187,3 +187,4 @@
         }
     }
 ]
+

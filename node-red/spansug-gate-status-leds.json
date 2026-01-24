@@ -24,11 +24,11 @@
         "wires": [["led_rundsav"]]
     },
     {
-        "id": "mqtt_rundsav_manual",
+        "id": "mqtt_disponibel",
         "type": "mqtt in",
         "z": "gate_status_leds_flow",
-        "name": "rundsav_manual state",
-        "topic": "spansug/gate/rundsav_manual/state",
+        "name": "disponibel state",
+        "topic": "spansug/gate/disponibel/state",
         "qos": "1",
         "datatype": "utf8",
         "broker": "mqtt_broker",
@@ -38,7 +38,7 @@
         "inputs": [],
         "x": 140,
         "y": 140,
-        "wires": [["led_rundsav_manual"]]
+        "wires": [["led_disponibel"]]
     },
     {
         "id": "mqtt_lille_cnc",
@@ -124,7 +124,7 @@
         "wires": [["gpio_21"]]
     },
     {
-        "id": "led_rundsav_manual",
+        "id": "led_disponibel",
         "type": "function",
         "z": "gate_status_leds_flow",
         "name": "Parse state → GPIO 20",
@@ -217,7 +217,7 @@
         "id": "gpio_20",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 20 (rundsav_manual)",
+        "name": "GPIO 20 (disponibel)",
         "pin": "20",
         "set": true,
         "level": "0",
@@ -317,3 +317,4 @@
         "sessionExpiry": ""
     }
 ]
+
