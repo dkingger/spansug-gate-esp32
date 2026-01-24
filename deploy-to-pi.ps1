@@ -25,7 +25,8 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Du bliver bedt om password én gang for at sætte key-based auth op." -ForegroundColor Yellow
     
     # Kopier SSH key til Pi
-    type $sshKeyPath.pub | ssh ${PI_USER}@${PI_IP} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+    $pubKeyPath = "$sshKeyPath.pub"
+    type $pubKeyPath | ssh ${PI_USER}@${PI_IP} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "SSH key kopieret! Fremtidige forbindelser kræver ikke password." -ForegroundColor Green
