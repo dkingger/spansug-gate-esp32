@@ -92,11 +92,11 @@
         "wires": [["led_rondelsliber"]]
     },
     {
-        "id": "mqtt_gate6",
+        "id": "mqtt_baandsliber",
         "type": "mqtt in",
         "z": "gate_status_leds_flow",
-        "name": "gate6 state",
-        "topic": "spansug/gate/gate6/state",
+        "name": "baandsliber state",
+        "topic": "spansug/gate/baandsliber/state",
         "qos": "1",
         "datatype": "utf8",
         "broker": "mqtt_broker",
@@ -106,7 +106,7 @@
         "inputs": [],
         "x": 120,
         "y": 380,
-        "wires": [["led_gate6"]]
+        "wires": [["led_baandsliber"]]
     },
     {
         "id": "led_rundsav",
@@ -184,7 +184,7 @@
         "wires": [["gpio_25"]]
     },
     {
-        "id": "led_gate6",
+        "id": "led_baandsliber",
         "type": "function",
         "z": "gate_status_leds_flow",
         "name": "Parse state → GPIO 24",
@@ -277,7 +277,7 @@
         "id": "gpio_24",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 24 (gate6)",
+        "name": "GPIO 24 (baandsliber)",
         "pin": "24",
         "set": true,
         "level": "0",
@@ -317,4 +317,5 @@
         "sessionExpiry": ""
     }
 ]
+
 
