@@ -7,3 +7,6 @@
 .vscode/
 *.bin
 *.elf
+
+# WiFi credentials (use secrets.h.example as template)
+src/secrets.h

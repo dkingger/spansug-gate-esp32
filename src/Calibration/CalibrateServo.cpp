@@ -5,10 +5,7 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 #include <Preferences.h>
-
-// WiFi credentials
-const char* ssid = "newdahl";
-const char* password = "12345678";
+#include "../secrets.h"
 
 // Servo konfiguration
 static const int SERVO_PIN = 3;
@@ -138,7 +135,7 @@ void moveTo(int deg) {
 }
 
 void setupWiFi() {
-  addLog("\nWiFi: Forbinder til " + String(ssid) + "...");
+  addLog("\nWiFi: Forbinder til " + String(WIFI_SSID) + "...");
   WiFi.mode(WIFI_STA);
 
   // Netværksnavn/hostname
@@ -151,7 +148,7 @@ void setupWiFi() {
   IPAddress dns1(192, 168, 87, 1);
 
   WiFi.config(staticIP, gateway, subnet, dns1);
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 20) {

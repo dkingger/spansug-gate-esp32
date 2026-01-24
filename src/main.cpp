@@ -4,10 +4,9 @@
 #include <ESP32Servo.h>
 #include <Adafruit_NeoPixel.h>
 #include <Preferences.h>
+#include "secrets.h"
 
 // --------- USER CONFIG ----------
-static const char* WIFI_SSID = "newdahl";
-static const char* WIFI_PASS = "12345678";
 
 static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
@@ -231,7 +230,7 @@ void wifiConnect() {
   Serial.println(WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(300);
