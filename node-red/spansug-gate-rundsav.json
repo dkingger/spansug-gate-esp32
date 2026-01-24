@@ -1,18 +1,18 @@
 [
     {
-        "id": "rundsav_auto_flow",
+        "id": "rundsav_flow",
         "type": "tab",
         "label": "Rundsav Auto Gate",
         "disabled": false,
-        "info": "Gate controller for rundsav_auto with variable afterrun delay and relay control",
+        "info": "Gate controller for rundsav with variable afterrun delay and relay control",
         "env": []
     },
     {
-        "id": "mqtt_in_rundsav_auto",
+        "id": "mqtt_in_rundsav",
         "type": "mqtt in",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
-        "topic": "spansug/gate/rundsav_auto/machine_active",
+        "topic": "spansug/gate/rundsav/machine_active",
         "qos": "2",
         "datatype": "auto-detect",
         "broker": "675a7eb26a300987",
@@ -24,14 +24,14 @@
         "y": 320,
         "wires": [
             [
-                "switch_rundsav_auto"
+                "switch_rundsav"
             ]
         ]
     },
     {
-        "id": "switch_rundsav_auto",
+        "id": "switch_rundsav",
         "type": "switch",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
         "property": "payload",
         "propertyType": "msg",
@@ -54,18 +54,18 @@
         "y": 320,
         "wires": [
             [
-                "change_open_rundsav_auto"
+                "change_open_rundsav"
             ],
             [
-                "change_wait_rundsav_auto",
-                "function_delay_rundsav_auto"
+                "change_wait_rundsav",
+                "function_delay_rundsav"
             ]
         ]
     },
     {
-        "id": "change_open_rundsav_auto",
+        "id": "change_open_rundsav",
         "type": "change",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "OPEN",
         "rules": [
             {
@@ -85,15 +85,15 @@
         "y": 220,
         "wires": [
             [
-                "mqtt_out_open_rundsav_auto",
-                "change_reset_timer_rundsav_auto"
+                "mqtt_out_open_rundsav",
+                "change_reset_timer_rundsav"
             ]
         ]
     },
     {
-        "id": "change_close_rundsav_auto",
+        "id": "change_close_rundsav",
         "type": "change",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "CLOSE",
         "rules": [
             {
@@ -113,14 +113,14 @@
         "y": 340,
         "wires": [
             [
-                "mqtt_out_close_rundsav_auto"
+                "mqtt_out_close_rundsav"
             ]
         ]
     },
     {
-        "id": "inject_delay_rundsav_auto",
+        "id": "inject_delay_rundsav",
         "type": "inject",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "Lukke-delay (sek)",
         "props": [
             {
@@ -138,14 +138,14 @@
         "y": 140,
         "wires": [
             [
-                "change_store_delay_rundsav_auto"
+                "change_store_delay_rundsav"
             ]
         ]
     },
     {
-        "id": "change_store_delay_rundsav_auto",
+        "id": "change_store_delay_rundsav",
         "type": "change",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
         "rules": [
             {
@@ -168,9 +168,9 @@
         ]
     },
     {
-        "id": "function_delay_rundsav_auto",
+        "id": "function_delay_rundsav",
         "type": "function",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "function 1",
         "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
         "outputs": 1,
@@ -183,14 +183,14 @@
         "y": 340,
         "wires": [
             [
-                "delay_rundsav_auto"
+                "delay_rundsav"
             ]
         ]
     },
     {
-        "id": "delay_rundsav_auto",
+        "id": "delay_rundsav",
         "type": "delay",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
         "pauseType": "delayv",
         "timeout": "5",
@@ -208,16 +208,16 @@
         "y": 340,
         "wires": [
             [
-                "change_close_rundsav_auto"
+                "change_close_rundsav"
             ]
         ]
     },
     {
-        "id": "mqtt_out_close_rundsav_auto",
+        "id": "mqtt_out_close_rundsav",
         "type": "mqtt out",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
-        "topic": "spansug/gate/rundsav_auto/cmd",
+        "topic": "spansug/gate/rundsav/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -231,11 +231,11 @@
         "wires": []
     },
     {
-        "id": "mqtt_out_open_rundsav_auto",
+        "id": "mqtt_out_open_rundsav",
         "type": "mqtt out",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
-        "topic": "spansug/gate/rundsav_auto/cmd",
+        "topic": "spansug/gate/rundsav/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -249,9 +249,9 @@
         "wires": []
     },
     {
-        "id": "change_reset_timer_rundsav_auto",
+        "id": "change_reset_timer_rundsav",
         "type": "change",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "Reset lukke-timer",
         "rules": [
             {
@@ -271,14 +271,14 @@
         "y": 260,
         "wires": [
             [
-                "delay_rundsav_auto"
+                "delay_rundsav"
             ]
         ]
     },
     {
-        "id": "change_wait_rundsav_auto",
+        "id": "change_wait_rundsav",
         "type": "change",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "WAIT",
         "rules": [
             {
@@ -298,16 +298,16 @@
         "y": 480,
         "wires": [
             [
-                "mqtt_out_wait_rundsav_auto"
+                "mqtt_out_wait_rundsav"
             ]
         ]
     },
     {
-        "id": "mqtt_out_wait_rundsav_auto",
+        "id": "mqtt_out_wait_rundsav",
         "type": "mqtt out",
-        "z": "rundsav_auto_flow",
+        "z": "rundsav_flow",
         "name": "",
-        "topic": "spansug/gate/rundsav_auto/cmd",
+        "topic": "spansug/gate/rundsav/cmd",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -360,3 +360,4 @@
         }
     }
 ]
+

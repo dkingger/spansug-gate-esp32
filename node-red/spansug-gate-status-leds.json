@@ -7,11 +7,11 @@
         "info": "Viser status for alle 6 gates med LED på Raspberry Pi GPIO"
     },
     {
-        "id": "mqtt_rundsav_auto",
+        "id": "mqtt_rundsav",
         "type": "mqtt in",
         "z": "gate_status_leds_flow",
-        "name": "rundsav_auto state",
-        "topic": "spansug/gate/rundsav_auto/state",
+        "name": "rundsav state",
+        "topic": "spansug/gate/rundsav/state",
         "qos": "1",
         "datatype": "utf8",
         "broker": "mqtt_broker",
@@ -21,7 +21,7 @@
         "inputs": [],
         "x": 130,
         "y": 80,
-        "wires": [["led_rundsav_auto"]]
+        "wires": [["led_rundsav"]]
     },
     {
         "id": "mqtt_rundsav_manual",
@@ -109,7 +109,7 @@
         "wires": [["led_gate6"]]
     },
     {
-        "id": "led_rundsav_auto",
+        "id": "led_rundsav",
         "type": "function",
         "z": "gate_status_leds_flow",
         "name": "Parse state → GPIO 21",
@@ -202,7 +202,7 @@
         "id": "gpio_21",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 21 (rundsav_auto)",
+        "name": "GPIO 21 (rundsav)",
         "pin": "21",
         "set": true,
         "level": "0",
