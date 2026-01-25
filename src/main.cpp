@@ -11,7 +11,7 @@
 static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
 
-static const char* GATE_ID = "rundsav";
+static const char* GATE_ID = "lille_cnc";
 
 // Topics
 static String topic_cmd    = String("spansug/gate/") + GATE_ID + "/cmd";

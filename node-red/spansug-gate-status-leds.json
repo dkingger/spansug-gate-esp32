@@ -127,7 +127,7 @@
         "id": "led_disponibel",
         "type": "function",
         "z": "gate_status_leds_flow",
-        "name": "Parse state → GPIO 20",
+        "name": "Parse state → GPIO 26",
         "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
@@ -136,7 +136,7 @@
         "libs": [],
         "x": 380,
         "y": 140,
-        "wires": [["gpio_20"]]
+        "wires": [["gpio_26"]]
     },
     {
         "id": "led_lille_cnc",
@@ -157,7 +157,7 @@
         "id": "led_stor_cnc",
         "type": "function",
         "z": "gate_status_leds_flow",
-        "name": "Parse state → GPIO 12",
+        "name": "Parse state → GPIO 13",
         "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
@@ -166,13 +166,13 @@
         "libs": [],
         "x": 380,
         "y": 260,
-        "wires": [["gpio_12"]]
+        "wires": [["gpio_13"]]
     },
     {
         "id": "led_rondelsliber",
         "type": "function",
         "z": "gate_status_leds_flow",
-        "name": "Parse state → GPIO 25",
+        "name": "Parse state → GPIO 19",
         "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
@@ -181,13 +181,13 @@
         "libs": [],
         "x": 380,
         "y": 320,
-        "wires": [["gpio_25"]]
+        "wires": [["gpio_19"]]
     },
     {
         "id": "led_baandsliber",
         "type": "function",
         "z": "gate_status_leds_flow",
-        "name": "Parse state → GPIO 24",
+        "name": "Parse state → GPIO 6",
         "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
@@ -196,7 +196,7 @@
         "libs": [],
         "x": 380,
         "y": 380,
-        "wires": [["gpio_24"]]
+        "wires": [["gpio_6"]]
     },
     {
         "id": "gpio_21",
@@ -214,11 +214,11 @@
         "wires": []
     },
     {
-        "id": "gpio_20",
+        "id": "gpio_26",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 20 (disponibel)",
-        "pin": "20",
+        "name": "GPIO 26 (disponibel)",
+        "pin": "26",
         "set": true,
         "level": "0",
         "freq": "",
@@ -244,11 +244,11 @@
         "wires": []
     },
     {
-        "id": "gpio_12",
+        "id": "gpio_13",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 12 (stor_cnc)",
-        "pin": "12",
+        "name": "GPIO 13 (stor_cnc)",
+        "pin": "13",
         "set": true,
         "level": "0",
         "freq": "",
@@ -259,11 +259,11 @@
         "wires": []
     },
     {
-        "id": "gpio_25",
+        "id": "gpio_19",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 25 (rondelsliber)",
-        "pin": "25",
+        "name": "GPIO 19 (rondelsliber)",
+        "pin": "19",
         "set": true,
         "level": "0",
         "freq": "",
@@ -274,11 +274,11 @@
         "wires": []
     },
     {
-        "id": "gpio_24",
+        "id": "gpio_6",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
-        "name": "GPIO 24 (baandsliber)",
-        "pin": "24",
+        "name": "GPIO 6 (baandsliber)",
+        "pin": "6",
         "set": true,
         "level": "0",
         "freq": "",
