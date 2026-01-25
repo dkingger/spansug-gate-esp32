@@ -415,18 +415,6 @@ Dette script:
 
 ---
 
-## Status
-
-* [x] MQTT-baseret gate-styring
-* [x] WS2812 status-LED
-* [x] Blinkende LED i ventefase (`WAIT`)
-* [x] Node-RED efterløbstid
-* [x] CT clamp / strømsensor (ZMCT103C implementation)
-* [x] Generisk gate-konfiguration
-* [x] Master-logik for spånsuger
-
----
-
 ## Noter
 
 * Projektet er designet til **værkstedsbrug**
