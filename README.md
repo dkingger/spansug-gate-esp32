@@ -34,39 +34,41 @@ Dette repository indeholder **den aktive MQTT-baserede firmware** til styring af
 ## Overordnet arkitektur
 
 ```
-[ Maskine 1 ]     [ Maskine 2 ]     [ Maskine 3 ]     [ Maskine 4 ]
-    │                 │                 │                 │
-    ▼                 ▼                 ▼                 ▼
-[ ESP32-gate1 ]   [ ESP32-gate2 ]   [ ESP32-gate3 ]   [ ESP32-gate4 ]
-    │                 │                 │                 │
-    └─────────────────┼─────────────────┼─────────────────┘
-                      │
-                    MQTT
-                      │
-                      ▼
-          [ Raspberry Pi Node-RED ]
-                      │
-          ┌───────────┼───────────┐
-          ▼           ▼           ▼
-     Automatiske   Manuel      Relay Manager
-      Gates (5)    Gate (1)    (KRITISK - 1)
-          │           │           │
-          └───────────┼───────────┘
-                      │
-                      ▼
-             [ GPIO 18 Relay ]
-            (Spånsuger motor)
+[ Rundsav ]  [ Disponibel ]  [ Lille CNC ]  [ Stor CNC ]  [ Rondelsliber ]  [ Båndsliberen ]
+     │             │              │             │                │                 │
+     ▼             ▼              ▼             ▼                ▼                 ▼
+[ ESP32-1 ]   [ ESP32-2 ]    [ ESP32-3 ]   [ ESP32-4 ]      [ ESP32-5 ]      [ ESP32-6 ]
+     │             │              │             │                │                 │
+     └─────────────┴──────────────┴─────────────┴────────────────┴─────────────────┘
+                                          │
+                                        MQTT
+                                          │
+                                          ▼
+                           [ Raspberry Pi - spansug-backend.local ]
+                                          │
+                  ┌───────────────────────┼──────────────────────┐
+                  ▼                       ▼                      ▼
+           Node-RED Flows          Status LEDs            Relay Manager
+           (6 auto gates)        (6 GPIO outputs)          (KRITISK)
+                  │                       │                      │
+                  └───────────────────────┼──────────────────────┘
+                                          │
+                                          ▼
+                                   [ GPIO 18 Relay ]
+                                   (Spånsuger motor)
 
-Raspberry Pi:
-- Mosquitto (MQTT broker)
-- Node-RED (7 flows: 5 auto gates + 1 manual + 1 relay manager)
+Raspberry Pi Services:
+- Mosquitto (MQTT broker - port 1883)
+- Node-RED (9 flows: 6 gates + 1 status LEDs + 1 relay manager + 1 emergency stop)
+- Apache (Web dashboard - port 80)
 ```
 
 **Princip:**
 
-* ESP32 er en simpel hardware-node (servo, LED, input)
+* ESP32 er en simpel hardware-node (servo, NeoPixel LED, sensor input)
 * Al beslutningslogik ligger i Node-RED
 * ESP32 viser kun status (LED) og udfører kommandoer
+* Raspberry Pi har fysiske GPIO status LED'er for hver gate
 * **KRITISK:** En central Relay Manager koordinerer spånsuger-motoren
   - Kun ét relæ styrer spånsuger - kan ikke kontrolleres individuelt fra hver gate
   - Relay Manager tæller åbne gates: ON hvis ≥1 gate åbent, OFF hvis alle lukket
@@ -86,6 +88,7 @@ Raspberry Pi:
 ├── node-red/             # Node-RED flow (egen README)
 ├── web/                  # Web dashboard filer
 ├── deploy-to-pi.ps1      # Deploy script (Windows → Raspberry Pi)
+├── update-pi.sh          # Update script (kør på Raspberry Pi for at opdatere flows)
 ├── install-pi.sh         # Installations script (kør på Raspberry Pi)
 ├── debug-backend.sh      # Diagnosticerings script til backend
 ├── platformio.ini        # Indeholder begge environments (MQTT og Calibration)
