@@ -395,9 +395,18 @@ Hvis du skal opdatere en kørende backend:
 ```powershell
 # Fra Windows
 .\deploy-to-pi.ps1
-
-# På Raspberry Pi - genimporter opdaterede flows i Node-RED editor
 ```
+
+Eller brug opdaterings scriptet direkte på Raspberry Pi:
+```bash
+# På Raspberry Pi - opdater flows automatisk
+bash ~/spansug-backend/update-pi.sh
+```
+
+Dette script:
+- Kopierer opdaterede flow filer til Node-RED
+- Genstarter Node-RED service automatisk
+- Bevarer eksisterende konfiguration og credentials
 
 ---
 
