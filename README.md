@@ -260,19 +260,19 @@ Relay Manager bruger flow context til at tælle åbne gates.
 
 **Scenarie uden central manager (GALT ❌):**
 1. `stor_cnc` åbner → relæ ON
-2. `rundsav_auto` åbner → relæ forbliver ON
+2. `rundsav` åbner → relæ forbliver ON
 3. `stor_cnc` lukker → sendes kommando til relæ OFF
-4. **Problem:** Relæ slukkes selv om `rundsav_auto` stadig er åbent!
+4. **Problem:** Relæ slukkes selv om `rundsav` stadig er åbent!
 5. Spånsuger stopper mens der stadig arbejdes ❌
- (GPIO 18)
-2. `rundsav_auto` åbner → Manager tæller 2 gates åbne → relæ forbliver ON
+
+**Scenarie med central Relay Manager (KORREKT ✓):**
+1. `stor_cnc` åbner → Manager tæller 1 gate åben → relæ ON (GPIO 18)
+2. `rundsav` åbner → Manager tæller 2 gates åbne → relæ forbliver ON
 3. `stor_cnc` lukker → Manager tæller 1 gate åbent → relæ forbliver ON ✓
-4. `rundsav_auto` lukker → Manager tæller 0 gates åbne → relæ OFF
+4. `rundsav` lukker → Manager tæller 0 gates åbne → relæ OFF
 5. Spånsuger stopper først når alle arbejder er færdige ✓
 
-Relay Manager publicerer også vacuum status til MQTT (`spansug/vacuum/active`) for brug i dashboards. forbliver ON ✓
-4. `rundsav_auto` lukker → Manager tæller 0 gates åbne → relæ OFF
-5. Spånsuger stopper først når alle arbejder er færdige ✓
+Relay Manager publicerer også vacuum status til MQTT (`spansug/vacuum/active`) for brug i dashboards.
 
 ---
 
