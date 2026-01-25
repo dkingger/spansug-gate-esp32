@@ -192,22 +192,24 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 ## Node-RED backend (kort)
 
-Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 5 integrerede flows.
+Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 9 integrerede flows.
 
-### 7 Flows arbetar sammen
+### 9 Flows arbejder sammen
 
 **Automatiske gates (med servo-kontrol):**
-- `spansug-gate-rundsav_auto.json` – Rundsav Auto
-- `spansug-gate-stor_cnc.json` – Stor CNC
+- `spansug-gate-rundsav.json` – Rundsav
+- `spansug-gate-disponibel.json` – Disponibel
 - `spansug-gate-lille_cnc.json` – Lille CNC
+- `spansug-gate-stor_cnc.json` – Stor CNC
 - `spansug-rondelsliber-flow.json` – Rondelsliber
 - `spansug-gate-baandsliber.json` – Båndsliberen
 
-**Manuel gate (kun sensor):**
-- `spansug-gate-rundsav_manual.json` – Rundsav Manual
+**Status visualisering:**
+- `spansug-gate-status-leds.json` – GPIO LED'er på Raspberry Pi for gate status
 
-**KRITISK – Central relay koordinering:**
+**KRITISK – Central koordinering:**
 - `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren (GPIO 18)
+- `spansug-emergency-stop.json` – Nødstop funktionalitet for hele systemet
 
 ### Flow-princip (automatiske gates)
 
@@ -238,8 +240,8 @@ Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 5
 - Relæ = ON hvis ≥1 gate åbent
 - Relæ = OFF kun hvis ALLE gates lukket
 
-**Input:** Abonnerer på status fra alle 4 gates
-**Output:** Styrer GPIO 12 (spånsuger-relæ)
+**Input:** Abonnerer på status fra alle 6 gates
+**Output:** Styrer GPIO 18 (spånsuger-relæ)
 
 ### Variabler
 
