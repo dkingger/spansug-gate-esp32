@@ -101,8 +101,8 @@
         "id": "comment_hardware",
         "type": "comment",
         "z": "emergency_stop_flow",
-        "name": "Hardware: Momentary button mellem GPIO 17 og GND (intern pull-up aktiveret)",
-        "info": "**Hardware tilslutning:**\n\n```\nGPIO 17 → Momentary Button → GND\nGPIO 22 → 220Ω → LED (+) → LED (-) → GND (optional status LED)\n```\n\n**Funktionalitet:**\n- Button tryk detekteres når GPIO 17 går LOW (0)\n- Sender CLOSE kommando til alle gates\n- Status LED på GPIO 22 blinker 3 gange ved aktivering\n- Relay Manager slukker automatisk udsugning når alle gates er lukket\n\n**Pins i brug:**\n- GPIO 17: Emergency stop button\n- GPIO 18: Relay til udsugning (OPTAGET - ikke til LED!)\n- GPIO 22: Status LED\n\n**Test:**\n1. Tryk på button\n2. Se debug output i Node-RED\n3. Verificer at alle gates lukker\n4. Verificer at udsugning stopper",
+        "name": "Hardware: Momentary button mellem GPIO 23 og GND (intern pull-up aktiveret)",
+        "info": "**Hardware tilslutning:**\n\n```\nGPIO 23 → Momentary Button → GND\nGPIO 22 → 220Ω → LED (+) → LED (-) → GND (optional status LED)\n```\n\n**Funktionalitet:**\n- Button tryk detekteres når GPIO 23 går LOW (0)\n- Sender CLOSE kommando til alle gates\n- Status LED på GPIO 22 blinker 3 gange ved aktivering\n- Relay Manager slukker automatisk udsugning når alle gates er lukket\n\n**Pins i brug:**\n- GPIO 23: Emergency stop button\n- GPIO 18: Relay til udsugning (OPTAGET - ikke til LED!)\n- GPIO 22: Status LED\n\n**Test:**\n1. Tryk på button\n2. Se debug output i Node-RED\n3. Verificer at alle gates lukker\n4. Verificer at udsugning stopper",
         "x": 350,
         "y": 40,
         "wires": []

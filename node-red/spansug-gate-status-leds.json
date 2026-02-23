@@ -4,7 +4,7 @@
         "type": "tab",
         "label": "Gate Status LEDs",
         "disabled": false,
-        "info": "Viser status for alle 6 gates med LED på Raspberry Pi GPIO"
+        "info": "Viser status for alle 6 gates + vacuum status med LED på Raspberry Pi GPIO"
     },
     {
         "id": "mqtt_rundsav",
@@ -109,6 +109,23 @@
         "wires": [["led_baandsliber"]]
     },
     {
+        "id": "mqtt_vacuum",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "vacuum active",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": [],
+        "x": 120,
+        "y": 440,
+        "wires": [["led_vacuum"]]
+    },
+    {
         "id": "led_rundsav",
         "type": "function",
         "z": "gate_status_leds_flow",
@@ -199,6 +216,21 @@
         "wires": [["gpio_6"]]
     },
     {
+        "id": "led_vacuum",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse status → GPIO 12",
+        "func": "// Tænd LED hvis vacuum kører (payload = 1)\nconst active = parseInt(msg.payload);\nmsg.payload = (active === 1) ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 440,
+        "wires": [["gpio_18_led"]]
+    },
+    {
         "id": "gpio_21",
         "type": "rpi-gpio out",
         "z": "gate_status_leds_flow",
@@ -286,6 +318,21 @@
         "bcm": true,
         "x": 620,
         "y": 380,
+        "wires": []
+    },
+    {
+        "id": "gpio_20",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 12 (vacuum)",
+        "pin": "12",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 620,
+        "y": 440,
         "wires": []
     },
     {

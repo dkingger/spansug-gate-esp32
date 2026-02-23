@@ -1,0 +1,360 @@
+[
+  {
+    "id": "led_test_flow",
+    "type": "tab",
+    "label": "Spansug LED Test",
+    "disabled": false,
+    "info": "Manual LED test via MQTT state topics"
+  },
+  {
+    "id": "inject_led_test",
+    "type": "inject",
+    "z": "led_test_flow",
+    "name": "Test LEDs (2s)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "1",
+    "payloadType": "num",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "trig_rundsav",
+        "trig_disponibel",
+        "trig_lille_cnc",
+        "trig_stor_cnc",
+        "trig_rondelsliber",
+        "trig_baandsliber",
+        "trig_vacuum"
+      ]
+    ]
+  },
+  {
+    "id": "trig_rundsav",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Rundsav open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 380,
+    "y": 60,
+    "wires": [
+      [
+        "mqtt_rundsav_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_disponibel",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Disponibel open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 400,
+    "y": 110,
+    "wires": [
+      [
+        "mqtt_disponibel_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_lille_cnc",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Lille CNC open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 400,
+    "y": 160,
+    "wires": [
+      [
+        "mqtt_lille_cnc_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_stor_cnc",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Stor CNC open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 390,
+    "y": 210,
+    "wires": [
+      [
+        "mqtt_stor_cnc_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_rondelsliber",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Rondelsliber open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 410,
+    "y": 260,
+    "wires": [
+      [
+        "mqtt_rondelsliber_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_baandsliber",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Baandsliber open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 410,
+    "y": 310,
+    "wires": [
+      [
+        "mqtt_baandsliber_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_vacuum",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Vacuum 1->0",
+    "op1": "1",
+    "op2": "0",
+    "op1type": "num",
+    "op2type": "num",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 360,
+    "y": 360,
+    "wires": [
+      [
+        "mqtt_vacuum_active"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_rundsav_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "rundsav/state",
+    "topic": "spansug/gate/rundsav/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 640,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "mqtt_disponibel_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "disponibel/state",
+    "topic": "spansug/gate/disponibel/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 650,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "mqtt_lille_cnc_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "lille_cnc/state",
+    "topic": "spansug/gate/lille_cnc/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 650,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "mqtt_stor_cnc_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "stor_cnc/state",
+    "topic": "spansug/gate/stor_cnc/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 650,
+    "y": 210,
+    "wires": []
+  },
+  {
+    "id": "mqtt_rondelsliber_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "rondelsliber/state",
+    "topic": "spansug/gate/rondelsliber/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 660,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "mqtt_baandsliber_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "baandsliber/state",
+    "topic": "spansug/gate/baandsliber/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 650,
+    "y": 310,
+    "wires": []
+  },
+  {
+    "id": "mqtt_vacuum_active",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "vacuum/active",
+    "topic": "spansug/vacuum/active",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 640,
+    "y": 360,
+    "wires": []
+  },
+  {
+    "id": "mqtt_broker",
+    "type": "mqtt-broker",
+    "name": "Local Mosquitto",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "sessionExpiry": ""
+  }
+]

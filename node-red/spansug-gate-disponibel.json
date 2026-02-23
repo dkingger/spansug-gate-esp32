@@ -12,7 +12,7 @@
         "type": "rpi-gpio in",
         "z": "manual_gate_rundsav",
         "name": "Gate position sensor",
-        "pin": "23",
+        "pin": "11",
         "intype": "tri",
         "debounce": "25",
         "read": false,
