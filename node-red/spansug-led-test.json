@@ -28,7 +28,8 @@
     "wires": [
       [
         "trig_rundsav",
-        "trig_disponibel",
+        "trig_disponibel_1",
+        "trig_disponibel_2",
         "trig_lille_cnc",
         "trig_stor_cnc",
         "trig_rondelsliber",
@@ -62,10 +63,10 @@
     ]
   },
   {
-    "id": "trig_disponibel",
+    "id": "trig_disponibel_1",
     "type": "trigger",
     "z": "led_test_flow",
-    "name": "Disponibel open->closed",
+    "name": "Disponibel 1 open->closed",
     "op1": "open",
     "op2": "closed",
     "op1type": "str",
@@ -81,7 +82,31 @@
     "y": 110,
     "wires": [
       [
-        "mqtt_disponibel_state"
+        "mqtt_disponibel_1_state"
+      ]
+    ]
+  },
+  {
+    "id": "trig_disponibel_2",
+    "type": "trigger",
+    "z": "led_test_flow",
+    "name": "Disponibel 2 open->closed",
+    "op1": "open",
+    "op2": "closed",
+    "op1type": "str",
+    "op2type": "str",
+    "duration": "2",
+    "extend": false,
+    "units": "s",
+    "reset": "",
+    "bytopic": "all",
+    "topic": "",
+    "outputs": 1,
+    "x": 400,
+    "y": 135,
+    "wires": [
+      [
+        "mqtt_disponibel_2_state"
       ]
     ]
   },
@@ -224,11 +249,11 @@
     "wires": []
   },
   {
-    "id": "mqtt_disponibel_state",
+    "id": "mqtt_disponibel_1_state",
     "type": "mqtt out",
     "z": "led_test_flow",
-    "name": "disponibel/state",
-    "topic": "spansug/gate/disponibel/state",
+    "name": "disponibel_1/state",
+    "topic": "spansug/gate/disponibel_1/state",
     "qos": "1",
     "retain": "false",
     "respTopic": "",
@@ -239,6 +264,24 @@
     "broker": "mqtt_broker",
     "x": 650,
     "y": 110,
+    "wires": []
+  },
+  {
+    "id": "mqtt_disponibel_2_state",
+    "type": "mqtt out",
+    "z": "led_test_flow",
+    "name": "disponibel_2/state",
+    "topic": "spansug/gate/disponibel_2/state",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "mqtt_broker",
+    "x": 650,
+    "y": 135,
     "wires": []
   },
   {

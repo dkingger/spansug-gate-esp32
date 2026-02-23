@@ -3,18 +3,24 @@
 Denne mappe indeholder **Node-RED-flowene**, som fungerer som den centrale styringslogik
 for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne (Vejle)**.
 
-## 5 Flows som arbetar sammen
+## 8 Flows som arbetar sammen
 
 **Automatiske gates (med servo-kontrol):**
-- `spansug-gate-rundsav_auto.json` – Rundsav (automatisk åbning ved maskinstatus)
+- `spansug-gate-rundsav.json` – Rundsav (automatisk åbning ved maskinstatus)
 - `spansug-gate-stor_cnc.json` – Stor CNC (automatisk åbning ved maskinstatus)
 - `spansug-gate-lille_cnc.json` – Lille CNC (automatisk åbning ved maskinstatus)
-
-**Manuel gate (kun sensor, ingen servo):**
-- `spansug-gate-rundsav_manual.json` – Rundsav manuel (rapporterer position-sensor status)
+- `spansug-gate-disponibel_1.json` – Disponibel 1 (automatisk åbning ved maskinstatus)
+- `spansug-gate-disponibel_2.json` – Disponibel 2 (automatisk åbning ved maskinstatus)
+- `spansug-gate-rondelsliber.json` – Rondelsliber (automatisk åbning ved maskinstatus)
+- `spansug-gate-baandsliber.json` – Båndsliber (automatisk åbning ved maskinstatus)
 
 **KRITISK – Central relay manager:**
 - `spansug-relay-manager.json` – **Sikrer at kun ét relæ styrer spånsugmotoren**
+
+**Diagnose flows:**
+- `spansug-gate-status-leds.json` – Styrer alle status-LED'er på Raspberry Pi
+- `spansug-emergency-stop.json` – Emergency Stop knap med gate auto-luk
+- `spansug-led-test.json` – Test flow til at teste alle LED'er på én gang
 
 ---
 
@@ -55,16 +61,16 @@ for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne
 
 ---
 
-## Automatiske Gates (rundsav_auto, stor_cnc, lille_cnc)
+## Automatiske Gates (rundsav, disponibel_1, disponibel_2, stor_cnc, lille_cnc, rondelsliber, baandsliber)
 
 ### Flow-visualisering
 
 ![Automatic Flow Diagram](../images/automatic_flow.png)
 
 **Input:**
-- `spansug/gate/[gatename]/machine_active` – maskinstatus fra ESP32
-  - `1` = maskinen kører
-  - `0` = maskinen stoppet
+- `spansug/gate/[gatename]/machine_active` – maskinstatus fra ESP32 eller Raspberry Pi sensorer
+  - `1` = maskinen kører / sensoren aktiv
+  - `0` = maskinen stoppet / sensoren inaktiv
 
 **Output:**
 - `spansug/gate/[gatename]/cmd` – kommandoer til ESP32
@@ -94,39 +100,15 @@ for motoriserede spjæld (gates) i spånsugssystemet i **FabLab Spinderihallerne
 
 ### Variabler pr. gate
 
-Hver gate bruger disse **flow-variabler** (eksempel: rundsav_auto):
+Hver gate bruger disse **flow-variabler** (eksempel: disponibel_1):
 
 ```
-flow.rundsav_auto_delay = 30  (sekunder)
-flow.rundsav_auto_status = "LUKKET"  (nuværende tilstand)
+flow.lukke_delay = 30  (sekunder) – afterrun delay før gate lukkes
 ```
 
 ---
 
-## Manuel Gate (rundsav_manual)
 
-### Funktionalitet
-
-![Manual Flow Diagram](../images/manual_flow.png)
-
-Denne gate har **INGEN servo** – kun position-sensor input.
-
-**Input:**
-- GPIO 23 (position-sensor fra maskine)
-  - `1` = gate åbent
-  - `0` = gate lukket
-
-**Output:**
-- `spansug/gate/rundsav_manual/status` – rapporterer sensor-status
-  - `ÅBEN` eller `LUKKET`
-
-### Workflow
-
-Flow læser GPIO 23 løbende og publiserer status på MQTT.
-- Hvis sensor siger "åbent" → publiserer `ÅBEN`
-- Hvis sensor siger "lukket" → publiserer `LUKKET`
-
-Relay Manager bruger denne status til at beslutte om relæen skal være tændt.
 
 ---
 
@@ -245,12 +227,15 @@ spansug/gate/rundsav_auto/status
 Payload: ÅBEN eller LUKKET
 ```
 
-### Alle gate-navne
+### Alle gate-navne (8 parallelle gates)
 
-- `rundsav_auto`
+- `rundsav`
+- `disponibel_1`
+- `disponibel_2`
 - `stor_cnc`
 - `lille_cnc`
-- `rundsav_manual`
+- `rondelsliber`
+- `baandsliber`
 
 ---
 
@@ -401,7 +386,7 @@ sudo iptables -L | grep 1883
 | **GPIO 13** | Stor CNC | Grøn | Gate status indikator |
 | **GPIO 19** | Rondelsliber | Grøn | Gate status indikator |
 | **GPIO 6** | Båndsliber | Grøn | Gate status indikator |
-
+| **GPIO 11** | Disponibel 2 | OUTPUT | Gate status indikator |
 | **GPIO 12** | Vacuum | Grøn | Udsugning aktiv |
 
 **Styring-GPIO'er:**
@@ -411,7 +396,7 @@ sudo iptables -L | grep 1883
 | **GPIO 18** | Relay | OUTPUT | Spånsuger motor (KRITISK) |
 | **GPIO 23** | Button | INPUT (pull-up) | Emergency Stop knap |
 | **GPIO 22** | Status LED | OUTPUT | Emergency Stop indikator |
-| **GPIO 11** | Disponibel 2 | OUTPUT | Gate status indikator |
+
 
 ---
 
