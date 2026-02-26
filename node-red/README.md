@@ -412,7 +412,7 @@ sudo iptables -L | grep 1883
                        GND_--9-|O.O|-10-----GPIO15 (RXD0)
         (GPIO_GEN0) GPIO17--11-|O O|-12-----GPIO18 (🔵 Relay)
         (GPIO_GEN2) GPIO27--13-|O O|-14--_GND
-   (🟢 E-Stop LED) GPIO22--15-|O O|-16-----GPIO23 (🔴 E-Stop Button)
+    (🟢 E-Stop LED) GPIO22--15-|O O|-16-----GPIO23 (🔴 E-Stop Button)
                       +3V3--17-|O O|-18-----GPIO24 (GPIO_GEN5)
          (SPI_MOSI) GPIO10--19-|O.O|-20--_GND
          (SPI_MISO) GPIO9 --21-|O O|-22-----GPIO25 (GPIO_GEN6)
@@ -420,12 +420,12 @@ sudo iptables -L | grep 1883
                        GND_-25-|O O|-26-----GPIO7  (SPI_C1_N)
               (Can't use)---27-|O O|-28-----ID_SC Reserved for ID EEPROM
                     GPIO5---29-|O.O|-30--_
-   (🟢 Båndsliber) GPIO6 --31-|O O|-32-----GPIO12 (🟢 Vacuum LED)
-   (🟢 Stor CNC L) GPIO13--33-|O O|-34--_GND
-   (🟢 Rondelslib) GPIO19--35-|O O|-36-----GPIO16 (🟢 Lille CNC LED)
+    (🟢 Båndsliber) GPIO6 --31-|O O|-32-----GPIO12 (🟢 Vacuum LED)
+    (🟢 Stor CNC L) GPIO13--33-|O O|-34--_GND
+    (🟢 Rondelslib) GPIO19--35-|O O|-36-----GPIO16 (🟢 Lille CNC LED)
   (🟢 Disponibel 1) GPIO26--37-|O O|-38-----GPIO20
-                      _-39-|O O|-40-----GPIO21 (🟢 Rundsav LED)
-                           '---'
+                          _-39-|O O|-40-----GPIO21 (🟢 Rundsav LED)
+                               '---'
                        40W 0.1" PIN HDR
 ```
 
