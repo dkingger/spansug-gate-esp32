@@ -402,8 +402,9 @@ sudo iptables -L | grep 1883
 
 ## Blokdiagram – GPIO Tilslutninger
 
+![Raspberry Pi Pinout](../images/Raspberry-Pi-Pinout.jpg)
+
 ```
-> ![Raspberry Pi Pinout](../images/Raspberry-Pi-Pinout.jpg)
 ```
 
 **Røde markerede pins (🔴) Input (Trykkontakt)**
