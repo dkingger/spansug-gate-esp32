@@ -162,6 +162,29 @@ Payload:
 
 ---
 
+## OTA firmware-opdatering (CurrentSensor ESP)
+
+CurrentSensor-firmware understøtter OTA (Over-The-Air), så ESP'en kan opdateres via WiFi uden USB-kabel efter første opsætning.
+
+**Hostname:** `currentsensor.local`  
+**OTA password:** `fablabvejle!`
+
+### Første upload (kræver USB)
+
+```bash
+platformio run -e currentsensor --target upload
+```
+
+### Efterfølgende uploads via OTA (WiFi)
+
+```bash
+platformio run -e currentsensor_ota --target upload
+```
+
+Virker på Windows, macOS og Linux, så længe `platformio` er installeret eller PlatformIO-extension bruges i VS Code.
+
+---
+
 ## Manuel MQTT-test (køres på Raspberry Pi)
 
 **Se al trafik for en gate:**

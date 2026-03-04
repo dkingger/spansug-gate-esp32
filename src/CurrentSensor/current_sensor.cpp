@@ -4,10 +4,12 @@
 #include <ESPAsyncWebServer.h>
 #include <Preferences.h>
 #include <ESPmDNS.h>
+#include <ArduinoOTA.h>
 
 // WiFi credentials
-const char* ssid = "Fablab";
-const char* password = "11223344";
+const char* ssid = "newdahl";
+const char* password = "12345678";
+const char* ota_password = "fablabvejle!";
 
 // MQTT Broker settings
 const char* mqtt_broker = "spansug-backend.local";
@@ -55,6 +57,30 @@ bool machineIsOn = false;
 float hysteresis = 0.05; // Prevent flickering (50mA)
 int zeroOffset = 2048; // ADC zero point (will be calibrated)
 
+void setupOTA() {
+  ArduinoOTA.setHostname("currentsensor");
+  ArduinoOTA.setPassword(ota_password);
+
+  ArduinoOTA.onStart([]() {
+    Serial.println("OTA update started");
+  });
+
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA update finished");
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("OTA Progress: %u%%\r", (progress * 100) / total);
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("OTA Error[%u]\n", error);
+  });
+
+  ArduinoOTA.begin();
+  Serial.println("OTA ready: currentsensor.local");
+}
+
 void setupWiFi() {
   Serial.println("Connecting to WiFi...");
   Serial.print("SSID: ");
@@ -80,6 +106,8 @@ void setupWiFi() {
     } else {
       Serial.println("Error setting up mDNS!");
     }
+
+    setupOTA();
   } else {
     Serial.println("\nWiFi connection FAILED!");
     Serial.print("Status: ");
@@ -93,7 +121,8 @@ void reconnectMQTT() {
     String clientId = "ESP32Current-" + String(random(0xffff), HEX);
     if (client.connect(clientId.c_str())) {
       Serial.println("MQTT connected");
-      client.publish(mqtt_topic_status, "online");
+      String status = machineIsOn ? "1" : "0";
+      client.publish(mqtt_topic_status, status.c_str(), true);
     } else {
       Serial.print("Failed, rc=");
       Serial.print(client.state());
@@ -287,6 +316,8 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
+
   if (!client.connected()) {
     reconnectMQTT();
   }
@@ -323,7 +354,7 @@ void loop() {
       Serial.println(" [STATE CHANGED]");
       
       // Publish state change to MQTT
-      client.publish(mqtt_topic_status, status.c_str());
+      client.publish(mqtt_topic_status, status.c_str(), true);
       
       // Also publish current reading
       String payload = String(current, 3);
@@ -338,6 +369,10 @@ void loop() {
     if (currentTime - lastPublishTime >= publishInterval) {
       // Send heartbeat on dedicated topic (for dashboard connectivity check)
       client.publish(mqtt_topic_heartbeat, "alive");
+
+      // Re-publish current machine state as retained so backend stays in sync
+      String status = machineIsOn ? "1" : "0";
+      client.publish(mqtt_topic_status, status.c_str(), true);
       
       lastPublishTime = currentTime;
       Serial.print(" [HEARTBEAT]");

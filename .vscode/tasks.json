@@ -1,0 +1,41 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "PlatformIO Upload currentsensor",
+			"type": "shell",
+			"command": "platformio",
+			"args": [
+				"run",
+				"-e",
+				"currentsensor",
+				"--target",
+				"upload"
+			],
+			"windows": {
+				"command": "C:\\Users\\dking\\.platformio\\penv\\Scripts\\platformio.exe"
+			},
+			"problemMatcher": [
+				"$platformio"
+			]
+		},
+		{
+			"label": "PlatformIO Upload currentsensor OTA",
+			"type": "shell",
+			"command": "platformio",
+			"args": [
+				"run",
+				"-e",
+				"currentsensor_ota",
+				"--target",
+				"upload"
+			],
+			"windows": {
+				"command": "C:\\Users\\dking\\.platformio\\penv\\Scripts\\platformio.exe"
+			},
+			"problemMatcher": [
+				"$platformio"
+			]
+		}
+	]
+}
