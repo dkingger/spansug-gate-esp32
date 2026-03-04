@@ -292,12 +292,18 @@
             const gateId = parts[2];
             const property = parts[3];
             
-            // Initialize gate if not exists
+            // Initialize gate if not exists (only if in PREDEFINED_GATES)
             if (!gates.has(gateId)) {
                 const predefined = PREDEFINED_GATES.find(g => g.id === gateId);
+                if (!predefined) {
+                    // Ignore gates not in PREDEFINED_GATES
+                    return;
+                }
                 gates.set(gateId, {
                     id: gateId,
-                    name: predefined ? predefined.name : formatGateId(gateId),
+                    name: predefined.name,
+                    hasSensor: predefined.hasSensor || false,
+                    sensorConnected: predefined.hasSensor ? false : undefined,
                     state: 'unknown',
                     machine_active: false,
                     lastUpdate: new Date()
