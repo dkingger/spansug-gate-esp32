@@ -185,6 +185,48 @@ platformio run -e currentsensor_ota --target upload
 
 Virker på Windows, macOS og Linux, så længe `platformio` er installeret eller PlatformIO-extension bruges i VS Code.
 
+### OTA fejlsøgning (hurtig guide)
+
+Hvis OTA pludseligt fejler, så tjek i denne rækkefølge:
+
+1. **Kør OTA upload igen og læs første fejl-linje**
+
+   ```bash
+   platformio run -e currentsensor_ota --target upload
+   ```
+
+2. **Tjek `platformio.ini` for ugyldige `espota` flags**
+
+   Korrekt konfiguration for dette projekt:
+
+   ```ini
+   [env:currentsensor_ota]
+   upload_protocol = espota
+   upload_port = currentsensor.local
+   upload_flags =
+       --auth=fablabvejle!
+       --port=3232
+   ```
+
+   ⚠️ **Vigtigt:** Brug **ikke** `--host-port` her. Den option understøttes ikke af den `espota.py` version vi bruger, og giver fejl som:
+
+   ```
+   espota.py: error: no such option: --host-port
+   ```
+
+3. **Bekræft at enheden svarer på netværket**
+
+   - Åbn `http://currentsensor.local`
+   - Hvis hostname ikke virker, brug enhedens IP-adresse som `upload_port`
+
+4. **Bekræft at firmware ikke er for stor**
+
+   OTA kræver plads til både kørende firmware og ny firmware. I dette projekt ligger CurrentSensor-firmware omkring 65% flash, hvilket er OK.
+
+5. **Fallback hvis OTA stadig fejler**
+
+   Lav én USB-upload (`currentsensor` environment), og prøv derefter OTA igen.
+
 ---
 
 ## Manuel MQTT-test (køres på Raspberry Pi)
@@ -324,6 +366,13 @@ Strømførende ledning → ZMCT103C sensor → ESP32-C3 → MQTT → Node-RED �
 - **Voltage divider** (10kΩ / 20kΩ) for GPIO beskyttelse
 - **Web interface** for baseline kalibrering (http://currentsensor.local)
 
+### Firmware (v1.2.3)
+- OTA-update via WiFi (hostname: `currentsensor.local`, port: 3232)
+- Optimeret sampling: 500 samples (fra 1000) for mindre blocking
+- 2-sekund debounce for stabil state-detection
+- 100mA hysteresis for at undgå flutter
+- Non-blocking MQTT reconnect (5-sek retry interval)
+
 ### Integration
 Systemet sender samme MQTT payload som remote sensors:
 ```
@@ -390,12 +439,30 @@ Scriptet installerer og konfigurerer automatisk:
 - ✅ Avahi daemon til .local DNS
 
 #### 4. Importer Node-RED flows
-1. Åbn Node-RED editor: `http://<IP-ADRESSE>:1880`
-2. Klik på menu (☰) → Import
-3. Vælg "select a file to import"
-4. Importer alle `.json` filer fra `~/spansug-backend/node-red/`:
+
+**Metode 1: Via fil-browser (nemmest)**
+
+SSH til Raspberry Pi og kopiér flows til Node-RED's brugermappe:
+```bash
+ssh pi@spansug-backend.local
+cp ~/spansug-backend/node-red/*.json ~/.node-red/
+sudo systemctl restart nodered
+```
+
+Node-RED genindlæser automatisk flowene fra `~/.node-red/` ved restart.
+
+**Metode 2: Manuel import via UI**
+
+1. SSH til Pi og vis indhold af hver fil: `cat ~/spansug-backend/node-red/spansug-initialization.json`
+2. Kopiér output (hele JSON-indholdet)
+3. I Node-RED editor (`http://spansug-backend.local:1880`):
+   - Klik menu (☰) → Import
+   - Vælg **Clipboard** fanen
+   - Paste JSON-indholdet
+   - Klik **Import**
+4. Gentag for hver flow-fil i denne rækkefølge:
    
-   **KRITISK - skal importeres først:**
+   **KRITISK - importér først:**
    - `spansug-initialization.json` (sender CLOSE til alle gates ved opstart)
    - `spansug-relay-manager.json`
    - `spansug-emergency-stop.json`
@@ -411,12 +478,8 @@ Scriptet installerer og konfigurerer automatisk:
    
    **Status og visualisering:**
    - `spansug-gate-status-leds.json`
-   
-   **Valgfri (debug/test):**
-   - `spansug-debug-simulering.json`
-   - `spansug-led-test.json`
 
-5. Klik **Deploy** (øverst til højre)
+5. Klik **Deploy** (øverst til højre) efter import af alle flows
 
 #### 5. Verificer installation
 Kør diagnosticerings script:
@@ -434,6 +497,10 @@ Tjek at alle services kører:
 - **Dashboard**: `http://<IP-ADRESSE>/dashboard.html`
 - **MQTT broker**: `<IP-ADRESSE>:1883`
 - **Hostname**: `http://spansug-backend.local:1880`
+
+**Dashboard versionering:**
+- Versionsnummeret vises i topbaren på dashboardet.
+- Opdater versionsnummeret i `web/dashboard.html` ved at ændre `DASHBOARD_VERSION` konstanten.
 
 Test MQTT kommunikation:
 ```bash
@@ -467,6 +534,40 @@ Dette script:
 - Kopierer opdaterede flow filer til Node-RED
 - Genstarter Node-RED service automatisk
 - Bevarer eksisterende konfiguration og credentials
+
+---
+
+## Dashboard (v2.1.0)
+
+Web dashboardet viser realtid status på alle gates og kan tilgås på:
+```
+http://spansug-backend.local
+```
+
+### Features
+
+**Gate statusvisning:**
+- Realtids MQTT status for hver gate (Åben/Lukket/Venter)
+- Sensor-forbindelsestatus (online/offline) for eksterne sensorer
+- Maskinstatus (Active/Inactive)
+
+**Aktivitetslog (Nyt i v2.1.0):**
+- Logning af alle machine_active state changes
+- Viser dato + tidspunkt for hver aktivitet
+- Data gemmes lokalt i browser localStorage (holder ved reload)
+- "Ryd Log" knap for at slette historie
+- Farvekodning (grøn for tændt, grå for slukket)
+
+**UI/UX forbedringer:**
+- Lilla gradient-baggrund (alle sider)
+- SVG favicons med branding (fabrik-ikon til dashboard)
+- Responsive design for alle skærmstørrelser
+
+### Dashboard versionering
+Versionsnummeret vises i connection status bar. Opdater ved ændringer:
+```javascript
+const DASHBOARD_VERSION = 'v2.1.0';  // web/dashboard.html
+```
 
 ---
 

@@ -6,6 +6,9 @@
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
 
+// Firmware version
+const char* FIRMWARE_VERSION = "v1.2.3"; // Enhanced OTA stability (WiFi sleep disabled, explicit port, server.end())
+
 // WiFi credentials
 const char* ssid = "newdahl";
 const char* password = "12345678";
@@ -47,26 +50,45 @@ AsyncWebServer server(80);
 Preferences preferences;
 
 unsigned long lastReadTime = 0;
-const unsigned long readInterval = 1000; // Read every second
+const unsigned long readInterval = 300; // Read every 300ms for faster response
 unsigned long lastPublishTime = 0;
 const unsigned long publishInterval = 5000; // Publish status every 5 seconds
+
+// Reduce SAMPLES and delay for faster sampling - prevents loop blocking
+#define SAMPLES 500  // Reduce from 1000 to 500 for faster sampling (still accurate)
 
 // Machine state detection
 float baselineCurrent = 0.1; // Default baseline in Amperes
 bool machineIsOn = false;
-float hysteresis = 0.05; // Prevent flickering (50mA)
+float hysteresis = 0.1; // Prevent flickering (100mA)
 int zeroOffset = 2048; // ADC zero point (will be calibrated)
+
+// Debounce logic to prevent rapid on/off switching
+unsigned long stateChangeTime = 0;
+bool pendingState = false;
+bool pendingStateValue = false;
+const unsigned long DEBOUNCE_DELAY = 2000; // 2 seconds - state must be stable
 
 void setupOTA() {
   ArduinoOTA.setHostname("currentsensor");
   ArduinoOTA.setPassword(ota_password);
+  ArduinoOTA.setPort(3232);
 
   ArduinoOTA.onStart([]() {
-    Serial.println("OTA update started");
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_SPIFFS
+      type = "filesystem";
+    }
+    Serial.println("OTA update started: " + type);
+    // Disconnect MQTT and stop web server to allow clean OTA
+    client.disconnect();
+    server.end();
   });
 
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nOTA update finished");
+    Serial.println("\nOTA update finished - rebooting");
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -74,7 +96,12 @@ void setupOTA() {
   });
 
   ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("OTA Error[%u]\n", error);
+    Serial.printf("OTA Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
 
   ArduinoOTA.begin();
@@ -100,9 +127,13 @@ void setupWiFi() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     
+    // Disable WiFi sleep for OTA stability
+    WiFi.setSleep(false);
+    
     // Start mDNS
     if (MDNS.begin("currentsensor")) {
       Serial.println("mDNS started: currentsensor.local");
+      MDNS.addService("arduino", "tcp", 3232); // Advertise OTA service
     } else {
       Serial.println("Error setting up mDNS!");
     }
@@ -115,19 +146,25 @@ void setupWiFi() {
   }
 }
 
+unsigned long lastMQTTAttempt = 0;
+const unsigned long mqttRetryInterval = 5000; // Try reconnect every 5 seconds
+
 void reconnectMQTT() {
-  while (!client.connected()) {
-    Serial.println("Attempting MQTT connection...");
-    String clientId = "ESP32Current-" + String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str())) {
-      Serial.println("MQTT connected");
-      String status = machineIsOn ? "1" : "0";
-      client.publish(mqtt_topic_status, status.c_str(), true);
-    } else {
-      Serial.print("Failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" retrying in 5 seconds");
-      delay(5000);
+  // Non-blocking reconnect - only try once per call
+  if (!client.connected()) {
+    unsigned long now = millis();
+    if (now - lastMQTTAttempt >= mqttRetryInterval) {
+      lastMQTTAttempt = now;
+      Serial.println("Attempting MQTT connection...");
+      String clientId = "ESP32Current-" + String(random(0xffff), HEX);
+      if (client.connect(clientId.c_str())) {
+        Serial.println("MQTT connected");
+        String status = machineIsOn ? "1" : "0";
+        client.publish(mqtt_topic_status, status.c_str(), true);
+      } else {
+        Serial.print("Failed, rc=");
+        Serial.println(client.state());
+      }
     }
   }
 }
@@ -162,7 +199,7 @@ float readCurrent() {
     int val = analogRead(CURRENT_SENSOR_PIN);
     int centered = val - avgValue;
     sumSquared += (long)centered * centered;
-    delayMicroseconds(100);
+    // Removed delayMicroseconds - was blocking MQTT keep-alive
   }
   
   float rms = sqrt((float)sumSquared / SAMPLES);
@@ -188,8 +225,9 @@ void setupWebServer() {
 <head>
   <title>Current Sensor Calibration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 100 100'><defs><linearGradient id='lg' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23ff6600;stop-opacity:1'/><stop offset='50%' style='stop-color:%23ecff00;stop-opacity:1'/><stop offset='100%' style='stop-color:%23ffb200;stop-opacity:1'/></linearGradient></defs><path d='M50 8 L32 48 L48 48 L35 98 L75 38 L55 38 Z' fill='url(%23lg)' stroke='%23ff6600' stroke-width='1.2' stroke-linejoin='round'/></svg>">
   <style>
-    body { font-family: Arial; text-align: center; margin: 20px; background: #f0f0f0; }
+    body { font-family: Arial; text-align: center; margin: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
     .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     h1 { color: #333; }
     .value { font-size: 48px; color: #007bff; margin: 20px 0; }
@@ -200,12 +238,14 @@ void setupWebServer() {
     button { padding: 12px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background: #0056b3; }
     .info { margin: 10px 0; color: #666; }
+    .version { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #999; font-size: 12px; }
   </style>
   <script>
     function updateValues() {
       fetch('/data').then(r => r.json()).then(data => {
         document.getElementById('current').innerText = data.current.toFixed(3);
         document.getElementById('baseline').innerText = data.baseline.toFixed(3);
+        document.getElementById('version').innerText = data.version;
         let statusEl = document.getElementById('status');
         statusEl.innerText = data.machineOn ? 'ON' : 'OFF';
         statusEl.className = 'status ' + (data.machineOn ? 'on' : 'off');
@@ -237,6 +277,9 @@ void setupWebServer() {
     <div class="info" style="margin-top: 20px; font-size: 14px;">
       Machine turns ON when current exceeds baseline + 50mA
     </div>
+    <div class="version">
+      Firmware: <span id="version">...</span>
+    </div>
   </div>
 </body>
 </html>
@@ -250,7 +293,8 @@ void setupWebServer() {
     String json = "{";
     json += "\"current\":" + String(current, 3) + ",";
     json += "\"baseline\":" + String(baselineCurrent, 3) + ",";
-    json += "\"machineOn\":" + String(machineIsOn ? "true" : "false");
+    json += "\"machineOn\":" + String(machineIsOn ? "true" : "false") + ",";
+    json += "\"version\":\"" + String(FIRMWARE_VERSION) + "\"";
     json += "}";
     request->send(200, "application/json", json);
   });
@@ -279,6 +323,11 @@ void setupWebServer() {
 
 void setup() {
   Serial.begin(115200);
+  
+  Serial.println("\n=================================");
+  Serial.print("CurrentSensor Firmware: ");
+  Serial.println(FIRMWARE_VERSION);
+  Serial.println("=================================\n");
   
   // Load saved baseline from preferences
   preferences.begin("current-sensor", true);
@@ -346,33 +395,54 @@ void loop() {
       newState = current > (baselineCurrent + hysteresis);
     }
     
-    // If state changed, send MQTT message immediately
+    // Debounce logic: state must be stable for DEBOUNCE_DELAY ms
     if (newState != machineIsOn) {
-      machineIsOn = newState;
-      String status = machineIsOn ? "1" : "0";
-      Serial.print(machineIsOn ? "ON" : "OFF");
-      Serial.println(" [STATE CHANGED]");
-      
-      // Publish state change to MQTT
-      client.publish(mqtt_topic_status, status.c_str(), true);
-      
-      // Also publish current reading
-      String payload = String(current, 3);
-      client.publish(mqtt_topic_current, payload.c_str());
-      
-      lastPublishTime = currentTime; // Reset publish timer
+      if (!pendingState || pendingStateValue != newState) {
+        // New state detected - start debounce timer
+        pendingState = true;
+        pendingStateValue = newState;
+        stateChangeTime = currentTime;
+        Serial.print(newState ? "ON" : "OFF");
+        Serial.println(" [PENDING]");
+      } else if (currentTime - stateChangeTime >= DEBOUNCE_DELAY) {
+        // State has been stable for debounce period - confirm change
+        machineIsOn = newState;
+        pendingState = false;
+        
+        String status = machineIsOn ? "1" : "0";
+        Serial.print(machineIsOn ? "ON" : "OFF");
+        Serial.println(" [STATE CHANGED - CONFIRMED]");
+        
+        // Publish state change to MQTT
+        client.publish(mqtt_topic_status, status.c_str(), true);
+        
+        // Also publish current reading
+        String payload = String(current, 3);
+        client.publish(mqtt_topic_current, payload.c_str());
+        
+        lastPublishTime = currentTime; // Reset publish timer
+      } else {
+        // Still waiting for debounce
+        Serial.print(newState ? "ON" : "OFF");
+        Serial.print(" [DEBOUNCING ");
+        Serial.print((DEBOUNCE_DELAY - (currentTime - stateChangeTime)) / 1000.0, 1);
+        Serial.println("s]");
+      }
     } else {
-      Serial.println(machineIsOn ? "ON" : "OFF");
+      // State matches current - reset pending
+      if (pendingState) {
+        Serial.print(machineIsOn ? "ON" : "OFF");
+        Serial.println(" [DEBOUNCE CANCELLED]");
+        pendingState = false;
+      } else {
+        Serial.println(machineIsOn ? "ON" : "OFF");
+      }
     }
     
     // Periodic heartbeat - send on separate topic to not trigger flows
     if (currentTime - lastPublishTime >= publishInterval) {
       // Send heartbeat on dedicated topic (for dashboard connectivity check)
       client.publish(mqtt_topic_heartbeat, "alive");
-
-      // Re-publish current machine state as retained so backend stays in sync
-      String status = machineIsOn ? "1" : "0";
-      client.publish(mqtt_topic_status, status.c_str(), true);
       
       lastPublishTime = currentTime;
       Serial.print(" [HEARTBEAT]");

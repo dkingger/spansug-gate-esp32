@@ -70,6 +70,10 @@ scp web/dashboard.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 Write-Host "`nKopierer data filer..." -ForegroundColor Green
 scp data/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
+# Publicer web filer til Apache document root
+Write-Host "`nPublicerer web filer til /var/www/html/..." -ForegroundColor Green
+ssh ${PI_USER}@${PI_HOST} "sudo cp ~/spansug-backend/web/dashboard.html /var/www/html/dashboard.html && sudo cp ~/spansug-backend/web/index.html /var/www/html/index.html"
+
 # Kopier debug script
 Write-Host "`nKopierer debug script..." -ForegroundColor Green
 scp debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
