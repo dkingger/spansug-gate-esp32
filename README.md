@@ -88,6 +88,7 @@ Raspberry Pi Services:
 ├── node-red/             # Node-RED flow (egen README)
 ├── web/                  # Web dashboard filer
 ├── deploy-to-pi.ps1      # Deploy script (Windows → Raspberry Pi)
+├── deploy-to-pi.sh       # Deploy script (Mac/Linux → Raspberry Pi)
 ├── update-pi.sh          # Update script (kør på Raspberry Pi for at opdatere flows)
 ├── install-pi.sh         # Installations script (kør på Raspberry Pi)
 ├── debug-backend.sh      # Diagnosticerings script til backend
@@ -348,16 +349,24 @@ Systemet kræver en Raspberry Pi med følgende services:
 4. Indsæt SD-kort og boot Pi'en
 5. Find Pi'ens IP-adresse (tjek din router eller brug `arp -a`)
 
-#### 2. Deploy filer fra Windows
-Opdater IP-adresse, brugernavn og password i `deploy-to-pi.ps1`, derefter kør:
+#### 2. Deploy filer til Raspberry Pi
+
+**Windows:**
 ```powershell
-.\deploy-to-pi.ps1
+powershell -ExecutionPolicy Bypass -File .\deploy-to-pi.ps1
+```
+
+**Mac/Linux:**
+```bash
+bash deploy-to-pi.sh
 ```
 
 Dette kopierer:
 - Node-RED flows
 - Web dashboard filer
 - Installations script
+
+Begge scripts bruger hostname `spansug-backend.local` og sætter SSH key-authentication op automatisk (password påkrævet første gang).
 
 #### 3. Installer backend på Raspberry Pi
 SSH til Pi'en:
@@ -420,9 +429,15 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/test/cmd" -m "OPEN"
 
 ### Opdatering af eksisterende backend
 Hvis du skal opdatere en kørende backend:
+
+**Windows:**
 ```powershell
-# Fra Windows
-.\deploy-to-pi.ps1
+powershell -ExecutionPolicy Bypass -File .\deploy-to-pi.ps1
+```
+
+**Mac/Linux:**
+```bash
+bash deploy-to-pi.sh
 ```
 
 Eller brug opdaterings scriptet direkte på Raspberry Pi:

@@ -5,7 +5,7 @@ param(
     [switch]$QuickUpdate = $false
 )
 
-$PI_IP = "192.168.87.110" # indsæt din Raspberry Pi's IP adresse
+$PI_HOST = "spansug-backend.local" # Raspberry Pi hostname
 $PI_USER = "pi" # standard bruger på Raspberry Pi
 $PI_PASS = "raspberry" # standard password på Raspberry Pi (ændr hvis nødvendigt)
 
@@ -14,7 +14,7 @@ if ($QuickUpdate) {
 } else {
     Write-Host "=== Deploy til Raspberry Pi Backend ===" -ForegroundColor Cyan
 }
-Write-Host "IP: $PI_IP" -ForegroundColor Yellow
+Write-Host "Host: $PI_HOST" -ForegroundColor Yellow
 
 # Tjek om SSH key findes, ellers opret og kopier til Pi
 $sshKeyPath = "$env:USERPROFILE\.ssh\id_rsa"
@@ -26,7 +26,7 @@ if (-not (Test-Path $sshKeyPath)) {
 
 # Tjek om key allerede er kopieret til Pi
 Write-Host "`nTjekker SSH key authentication..." -ForegroundColor Green
-ssh -o BatchMode=yes -o ConnectTimeout=5 ${PI_USER}@${PI_IP} "echo 'Key auth OK'" 2>$null
+ssh -o BatchMode=yes -o ConnectTimeout=5 ${PI_USER}@${PI_HOST} "echo 'Key auth OK'" 2>$null
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "SSH key ikke fundet på Pi. Kopierer key..." -ForegroundColor Yellow
@@ -34,7 +34,7 @@ if ($LASTEXITCODE -ne 0) {
     
     # Kopier SSH key til Pi
     $pubKeyPath = "$sshKeyPath.pub"
-    type $pubKeyPath | ssh ${PI_USER}@${PI_IP} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+    type $pubKeyPath | ssh ${PI_USER}@${PI_HOST} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "SSH key kopieret! Fremtidige forbindelser kræver ikke password." -ForegroundColor Green
@@ -46,7 +46,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Test SSH forbindelse
 Write-Host "`nTester SSH forbindelse..." -ForegroundColor Green
-ssh ${PI_USER}@${PI_IP} "echo 'SSH forbindelse OK'"
+ssh ${PI_USER}@${PI_HOST} "echo 'SSH forbindelse OK'"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "FEJL: Kan ikke forbinde til Raspberry Pi" -ForegroundColor Red
@@ -56,32 +56,32 @@ if ($LASTEXITCODE -ne 0) {
 
 # Opret mapper på Pi
 Write-Host "`nOpretter mapper på Raspberry Pi..." -ForegroundColor Green
-ssh ${PI_USER}@${PI_IP} "mkdir -p ~/spansug-backend/node-red && mkdir -p ~/spansug-backend/web"
+ssh ${PI_USER}@${PI_HOST} "mkdir -p ~/spansug-backend/node-red && mkdir -p ~/spansug-backend/web"
 
 # Kopier Node-RED flows
 Write-Host "`nKopierer Node-RED flows..." -ForegroundColor Green
-scp node-red/*.json ${PI_USER}@${PI_IP}:~/spansug-backend/node-red/
+scp node-red/*.json ${PI_USER}@${PI_HOST}:~/spansug-backend/node-red/
 
 # Kopier web dashboard
 Write-Host "`nKopierer web dashboard..." -ForegroundColor Green
-scp web/dashboard.html ${PI_USER}@${PI_IP}:~/spansug-backend/web/
+scp web/dashboard.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Kopier index.html fra data mappen
 Write-Host "`nKopierer data filer..." -ForegroundColor Green
-scp data/index.html ${PI_USER}@${PI_IP}:~/spansug-backend/web/
+scp data/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Kopier debug script
 Write-Host "`nKopierer debug script..." -ForegroundColor Green
-scp debug-backend.sh ${PI_USER}@${PI_IP}:~/spansug-backend/
-ssh ${PI_USER}@${PI_IP} "chmod +x ~/spansug-backend/debug-backend.sh"
+scp debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/debug-backend.sh"
 
 # Kopier installations script
 Write-Host "`nKopierer installations script..." -ForegroundColor Green
-scp install-pi.sh ${PI_USER}@${PI_IP}:~/spansug-backend/
-ssh ${PI_USER}@${PI_IP} "chmod +x ~/spansug-backend/install-pi.sh"
+scp install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/install-pi.sh"
 
 Write-Host "`n=== Deploy færdig! ===" -ForegroundColor Cyan
 Write-Host "`nNæste skridt:" -ForegroundColor Yellow
-Write-Host "1. SSH til Pi'en: ssh pi@192.168.87.110"
+Write-Host "1. SSH til Pi'en: ssh pi@spansug-backend.local"
 Write-Host "2. Kør installations scriptet: cd ~/spansug-backend && bash install-pi.sh"
-Write-Host "3. Importer Node-RED flows via web interface: http://192.168.87.110:1880"
+Write-Host "3. Importer Node-RED flows via web interface: http://spansug-backend.local:1880"
