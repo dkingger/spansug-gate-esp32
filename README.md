@@ -92,6 +92,7 @@ Raspberry Pi Services:
 ├── update-pi.sh          # Update script (kør på Raspberry Pi for at opdatere flows)
 ├── install-pi.sh         # Installations script (kør på Raspberry Pi)
 ├── debug-backend.sh      # Diagnosticerings script til backend
+├── clear-mqtt-retained.sh # Clear retained MQTT messages
 ├── platformio.ini        # Indeholder begge environments (MQTT og Calibration)
 └── README.md             # (denne fil)
 ```
@@ -216,9 +217,9 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 ## Node-RED backend (kort)
 
-Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 9 integrerede flows.
+Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 10 integrerede flows.
 
-### 9 Flows arbejder sammen
+### 10 Flows arbejder sammen
 
 **Automatiske gates (med servo-kontrol):**
 - `spansug-gate-rundsav.json` – Rundsav
@@ -231,7 +232,8 @@ Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 9
 **Status visualisering:**
 - `spansug-gate-status-leds.json` – GPIO LED'er på Raspberry Pi for gate status
 
-**KRITISK – Central koordinering:**
+**System og koordinering:**
+- `spansug-initialization.json` – Sender CLOSE til alle gates ved opstart (sikrer konsistent initial state)
 - `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren (GPIO 18)
 - `spansug-emergency-stop.json` – Nødstop funktionalitet for hele systemet
 
@@ -392,13 +394,28 @@ Scriptet installerer og konfigurerer automatisk:
 2. Klik på menu (☰) → Import
 3. Vælg "select a file to import"
 4. Importer alle `.json` filer fra `~/spansug-backend/node-red/`:
-   - `spansug-gate-rundsav_auto.json`
-   - `spansug-gate-stor_cnc.json`
-   - `spansug-gate-lille_cnc.json`
-   - `spansug-gate-rundsav_manual.json`
+   
+   **KRITISK - skal importeres først:**
+   - `spansug-initialization.json` (sender CLOSE til alle gates ved opstart)
    - `spansug-relay-manager.json`
+   - `spansug-emergency-stop.json`
+   
+   **Gate controllers:**
+   - `spansug-gate-rundsav.json`
+   - `spansug-gate-disponibel_1.json`
+   - `spansug-gate-disponibel_2.json`
+   - `spansug-gate-lille_cnc.json`
+   - `spansug-gate-stor_cnc.json`
    - `spansug-rondelsliber-flow.json`
    - `spansug-gate-baandsliber.json`
+   
+   **Status og visualisering:**
+   - `spansug-gate-status-leds.json`
+   
+   **Valgfri (debug/test):**
+   - `spansug-debug-simulering.json`
+   - `spansug-led-test.json`
+
 5. Klik **Deploy** (øverst til højre)
 
 #### 5. Verificer installation
