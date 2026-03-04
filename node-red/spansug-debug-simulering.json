@@ -1,0 +1,525 @@
+[
+    {
+        "id": "debug_simulator_flow",
+        "type": "tab",
+        "label": "Debug Simulering",
+        "disabled": false,
+        "info": "Simuler MQTT-kald fra ESP32 til fejlsøgning af udsugnings-automatik",
+        "env": []
+    },
+    {
+        "id": "comment_header",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "🔧 Debug: Simuler maskine aktiv/inaktiv",
+        "info": "Brug disse knapper til at simulere at en ESP32 sender machine_active beskeder.\n\nKlik på inject-noderne for at sende \"1\" (aktiv) eller \"0\" (inaktiv).",
+        "x": 240,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "comment_lille_cnc",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "--- Lille CNC ---",
+        "info": "",
+        "x": 120,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "inject_lille_cnc_on",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Lille CNC: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "mqtt_sim_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "inject_lille_cnc_off",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Lille CNC: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 160,
+        "y": 180,
+        "wires": [
+            [
+                "mqtt_sim_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_sim_lille_cnc",
+        "type": "mqtt out",
+        "z": "debug_simulator_flow",
+        "name": "→ lille_cnc/machine_active",
+        "topic": "spansug/gate/lille_cnc/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 430,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "comment_stor_cnc",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "--- Stor CNC ---",
+        "info": "",
+        "x": 120,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "inject_stor_cnc_on",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Stor CNC: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 150,
+        "y": 280,
+        "wires": [
+            [
+                "mqtt_sim_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "inject_stor_cnc_off",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Stor CNC: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "mqtt_sim_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_sim_stor_cnc",
+        "type": "mqtt out",
+        "z": "debug_simulator_flow",
+        "name": "→ stor_cnc/machine_active",
+        "topic": "spansug/gate/stor_cnc/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 430,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "comment_baandsliber",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "--- Båndsliber ---",
+        "info": "",
+        "x": 120,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "inject_baandsliber_on",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Båndsliber: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 160,
+        "y": 420,
+        "wires": [
+            [
+                "mqtt_sim_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "inject_baandsliber_off",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Båndsliber: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 170,
+        "y": 460,
+        "wires": [
+            [
+                "mqtt_sim_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_sim_baandsliber",
+        "type": "mqtt out",
+        "z": "debug_simulator_flow",
+        "name": "→ baandsliber/machine_active",
+        "topic": "spansug/gate/baandsliber/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 440,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "comment_rundsav",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "--- Rundsav ---",
+        "info": "",
+        "x": 120,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "inject_rundsav_on",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Rundsav: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "mqtt_sim_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "inject_rundsav_off",
+        "type": "inject",
+        "z": "debug_simulator_flow",
+        "name": "Rundsav: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 160,
+        "y": 600,
+        "wires": [
+            [
+                "mqtt_sim_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_sim_rundsav",
+        "type": "mqtt out",
+        "z": "debug_simulator_flow",
+        "name": "→ rundsav/machine_active",
+        "topic": "spansug/gate/rundsav/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 430,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "comment_debug",
+        "type": "comment",
+        "z": "debug_simulator_flow",
+        "name": "--- Debug output ---",
+        "info": "",
+        "x": 660,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "mqtt_debug_all_active",
+        "type": "mqtt in",
+        "z": "debug_simulator_flow",
+        "name": "Alle machine_active",
+        "topic": "spansug/gate/+/machine_active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 680,
+        "y": 160,
+        "wires": [
+            [
+                "debug_machine_active"
+            ]
+        ]
+    },
+    {
+        "id": "debug_machine_active",
+        "type": "debug",
+        "z": "debug_simulator_flow",
+        "name": "machine_active",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 900,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "mqtt_debug_all_cmd",
+        "type": "mqtt in",
+        "z": "debug_simulator_flow",
+        "name": "Alle gate cmd",
+        "topic": "spansug/gate/+/cmd",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 220,
+        "wires": [
+            [
+                "debug_gate_cmd"
+            ]
+        ]
+    },
+    {
+        "id": "debug_gate_cmd",
+        "type": "debug",
+        "z": "debug_simulator_flow",
+        "name": "gate cmd",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 880,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "mqtt_debug_all_state",
+        "type": "mqtt in",
+        "z": "debug_simulator_flow",
+        "name": "Alle gate state",
+        "topic": "spansug/gate/+/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 280,
+        "wires": [
+            [
+                "debug_gate_state"
+            ]
+        ]
+    },
+    {
+        "id": "debug_gate_state",
+        "type": "debug",
+        "z": "debug_simulator_flow",
+        "name": "gate state",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 880,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "mqtt_debug_vacuum",
+        "type": "mqtt in",
+        "z": "debug_simulator_flow",
+        "name": "Vacuum status",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 340,
+        "wires": [
+            [
+                "debug_vacuum"
+            ]
+        ]
+    },
+    {
+        "id": "debug_vacuum",
+        "type": "debug",
+        "z": "debug_simulator_flow",
+        "name": "vacuum",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 870,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "675a7eb26a300987",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
