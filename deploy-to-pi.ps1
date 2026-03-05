@@ -84,8 +84,25 @@ Write-Host "`nKopierer installations script..." -ForegroundColor Green
 scp install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/install-pi.sh"
 
+# Kopier Node-RED import script
+Write-Host "`nKopierer Node-RED import script..." -ForegroundColor Green
+scp import-nodered-flows.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/import-nodered-flows.sh"
+
+# Hvis QuickUpdate, importer flows automatisk
+if ($QuickUpdate) {
+    Write-Host "`nImporterer Node-RED flows..." -ForegroundColor Green
+    ssh ${PI_USER}@${PI_HOST} "cd ~/spansug-backend && bash import-nodered-flows.sh"
+}
+
 Write-Host "`n=== Deploy færdig! ===" -ForegroundColor Cyan
-Write-Host "`nNæste skridt:" -ForegroundColor Yellow
-Write-Host "1. SSH til Pi'en: ssh pi@spansug-backend.local"
-Write-Host "2. Kør installations scriptet: cd ~/spansug-backend && bash install-pi.sh"
-Write-Host "3. Importer Node-RED flows via web interface: http://spansug-backend.local:1880"
+
+if ($QuickUpdate) {
+    Write-Host "`nFlows er importeret og Node-RED kør nu!" -ForegroundColor Green
+    Write-Host "Tjek Node-RED på: http://spansug-backend.local:1880" -ForegroundColor Green
+} else {
+    Write-Host "`nNæste skridt:" -ForegroundColor Yellow
+    Write-Host "1. SSH til Pi'en: ssh pi@spansug-backend.local"
+    Write-Host "2. Kør installations scriptet: cd ~/spansug-backend && bash install-pi.sh"
+    Write-Host "3. Importer Node-RED flows: cd ~/spansug-backend && bash import-nodered-flows.sh"
+}

@@ -78,24 +78,18 @@ Raspberry Pi Services:
 
 ## Mappestruktur
 
-```
-/
-├── src/                  # MQTT-firmware (main gate controller)
-├── src/Calibration/      # Kalibreringskode (egen README)
-├── src/CurrentSensor/    # ZMCT103C strømmåler til automatisk gate-triggering
-├── src/RemoteSensor/     # Remote sensor implementationer
-├── images/               # Diagrammer og fotos
-├── node-red/             # Node-RED flow (egen README)
-├── web/                  # Web dashboard filer
-├── deploy-to-pi.ps1      # Deploy script (Windows → Raspberry Pi)
-├── deploy-to-pi.sh       # Deploy script (Mac/Linux → Raspberry Pi)
-├── update-pi.sh          # Update script (kør på Raspberry Pi for at opdatere flows)
-├── install-pi.sh         # Installations script (kør på Raspberry Pi)
-├── debug-backend.sh      # Diagnosticerings script til backend
-├── clear-mqtt-retained.sh # Clear retained MQTT messages
-├── platformio.ini        # Indeholder begge environments (MQTT og Calibration)
-└── README.md             # (denne fil)
-```
+| Funktion                       | File |
+| ------------------------------ | --- |
+| MQTT firmware (main)           | `src/main.cpp` |
+| Kalibreringskode (servo + LED) | `src/Calibration/CalibrateServo.cpp` |
+| Strømsensor firmware (OTA)     | `src/CurrentSensor/current_sensor.cpp` |
+| Deploy til Raspberry Pi        | `deploy-to-pi.ps1` (Windows) / `deploy-to-pi.sh` (Mac/Linux) |
+| Node-RED auto-importer        | `import-nodered-flows.sh` |
+| Installationsscript            | `install-pi.sh` |
+| Opdateringsscript              | `update-pi.sh` |
+| Debugscript                    | `debug-backend.sh` |
+| Web dashboard                  | `web/dashboard.html` |
+| Node-RED flows                 | `node-red/*.json` (14 flows)
 
 ---
 
@@ -259,25 +253,31 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/rondelsliber/cmd" -m "CLOSE"
 
 ## Node-RED backend (kort)
 
-Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 10 integrerede flows.
+Node-RED kører på Raspberry Pi og fungerer som **central styringslogik** med 14+ integrerede flows (276 nodes i alt).
 
-### 10 Flows arbejder sammen
+### Flows arbejder sammen
 
 **Automatiske gates (med servo-kontrol):**
 - `spansug-gate-rundsav.json` – Rundsav
-- `spansug-gate-disponibel.json` – Disponibel
+- `spansug-gate-disponibel_1.json` – Disponibel 1
+- `spansug-gate-disponibel_2.json` – Disponibel 2
 - `spansug-gate-lille_cnc.json` – Lille CNC
 - `spansug-gate-stor_cnc.json` – Stor CNC
 - `spansug-rondelsliber-flow.json` – Rondelsliber
 - `spansug-gate-baandsliber.json` – Båndsliberen
 
-**Status visualisering:**
+**Status & Logging:**
 - `spansug-gate-status-leds.json` – GPIO LED'er på Raspberry Pi for gate status
+- `spansug-logger.json` – **NYST:** Vakuum on/off logning til fil (server-side)
 
 **System og koordinering:**
-- `spansug-initialization.json` – Sender CLOSE til alle gates ved opstart (sikrer konsistent initial state)
+- `spansug-initialization.json` – Sender CLOSE til alle gates ved opstart
 - `spansug-relay-manager.json` – Sikrer at kun ét relæ styrer spånsuger-motoren (GPIO 18)
-- `spansug-emergency-stop.json` – Nødstop funktionalitet for hele systemet
+- `spansug-emergency-stop.json` – Nødstop funktionalitet
+
+**Hjælpe-flows:**
+- `spansug-debug-simulering.json` – Test flow til simulering af ESP32-kald
+- `spansug-led-test.json` – Test alle LED'er på Pi'en
 
 ### Flow-princip (automatiske gates)
 
@@ -438,48 +438,61 @@ Scriptet installerer og konfigurerer automatisk:
 - ✅ Hostname: `spansug-backend.local`
 - ✅ Avahi daemon til .local DNS
 
-#### 4. Importer Node-RED flows
+#### 4. Importer Node-RED flows (AUTOMATISK!)
 
-**Metode 1: Via fil-browser (nemmest)**
+**Nemmeste metode - Automatisk import:**
 
-SSH til Raspberry Pi og kopiér flows til Node-RED's brugermappe:
-```bash
-ssh pi@spansug-backend.local
-cp ~/spansug-backend/node-red/*.json ~/.node-red/
-sudo systemctl restart nodered
+Kør deploy-scriptet med `-QuickUpdate` flag fra Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deploy-to-pi.ps1 -QuickUpdate
 ```
 
-Node-RED genindlæser automatisk flowene fra `~/.node-red/` ved restart.
+Dette vil:
+1. ✅ Kopiere alle flow-filer til Raspberry Pi
+2. ✅ Kopiere import-scriptet (`import-nodered-flows.sh`)
+3. ✅ **Automatisk importere alle 14 Node-RED flows**
+4. ✅ Genstarte Node-RED
+5. ✅ Vise succes-besked med adresse til Node-RED editor
 
-**Metode 2: Manuel import via UI**
+Scriptet kombinerer alle `node-red/*.json` filer og skriver dem direkte til Node-RED's `flows.json` fil - meget hurtigere og mere pålideligt end manuel import!
 
-1. SSH til Pi og vis indhold af hver fil: `cat ~/spansug-backend/node-red/spansug-initialization.json`
-2. Kopiér output (hele JSON-indholdet)
-3. I Node-RED editor (`http://spansug-backend.local:1880`):
-   - Klik menu (☰) → Import
-   - Vælg **Clipboard** fanen
-   - Paste JSON-indholdet
-   - Klik **Import**
-4. Gentag for hver flow-fil i denne rækkefølge:
-   
-   **KRITISK - importér først:**
-   - `spansug-initialization.json` (sender CLOSE til alle gates ved opstart)
-   - `spansug-relay-manager.json`
-   - `spansug-emergency-stop.json`
-   
-   **Gate controllers:**
-   - `spansug-gate-rundsav.json`
-   - `spansug-gate-disponibel_1.json`
-   - `spansug-gate-disponibel_2.json`
-   - `spansug-gate-lille_cnc.json`
-   - `spansug-gate-stor_cnc.json`
-   - `spansug-rondelsliber-flow.json`
-   - `spansug-gate-baandsliber.json`
-   
-   **Status og visualisering:**
-   - `spansug-gate-status-leds.json`
+---
 
-5. Klik **Deploy** (øverst til højre) efter import af alle flows
+**Alternativ: Manuel import via SSH (hvis du ønsker mere kontrol)**
+
+Hvis du hellere vil importere manuelt eller trækker filer direkte til Node-RED:
+
+SSH til Raspberry Pi:
+```bash
+ssh pi@spansug-backend.local
+cd ~/spansug-backend
+bash import-nodered-flows.sh
+```
+
+Eller manuelt gennem web-UI:
+1. Åbn `http://spansug-backend.local:1880`
+2. Klik ☰ Menu → Import
+3. Kopier JSON-indholdet fra hver fil i `node-red/` mappen
+4. Paste i import-dialogboksen
+5. Klik Deploy
+
+---
+
+**Importopsummering:**
+
+Import-scriptet (`import-nodered-flows.sh`):
+- Finder alle `spansug-*.json` flows
+- Merge dem til en enkelt `flows.json` fil
+- Laver backup før ændringer
+- Restarter Node-RED automatisk
+- Rapporterer succès/fejl for hver flow
+
+| Metode | Tid | Pålidelighed | Anbefales |
+| ------ | --- | ------------ | --------- |
+| QuickUpdate (automatisk) | < 10 sek | Højeste ✓✓✓ | ✅ **JA** |
+| Manuel SSH import | 2-3 min | Høj ✓✓ | Backup-plan |
+| Webb-UI import | 5+ min | Lav ✓ | Nej (langsommeligt) |
 
 #### 5. Verificer installation
 Kør diagnosticerings script:
@@ -491,6 +504,35 @@ Tjek at alle services kører:
 - Mosquitto: `sudo systemctl status mosquitto`
 - Node-RED: `sudo systemctl status nodered`
 - Apache: `sudo systemctl status apache2`
+
+---
+
+### Node-RED Flow Importer Script
+
+**Hvad gør `import-nodered-flows.sh`?**
+
+Dette script automatiserer import af alle Node-RED flows ved at:
+1. Læse alle `spansug-*.json` flow-filer fra `node-red/` mappen
+2. Merge dem til en enkelt `flows.json` fil (Python-baseret for pålidelighed)
+3. Lave backup af eksisterende flows først
+4. Stoppe Node-RED, opdatere flows, og genstarte
+5. Rapportere resultat
+
+**Manuelt kald (hvis du ikke bruger QuickUpdate):**
+
+SSH til Pi'en:
+```bash
+ssh pi@spansug-backend.local
+cd ~/spansug-backend
+bash import-nodered-flows.sh
+```
+
+**Fordele ved auto-import:**
+- ✅ Alle flows importeres samtidigt (ikke en ad gangen)
+- ✅ Retry-logic hvis Node-RED er offline
+- ✅ Backup før ændringer
+- ✅ Færre fejl end manuel import via webb-UI
+- ✅ Kan køres igen uden at slette eksisterende flows
 
 #### 6. Test systemet
 - **Node-RED editor**: `http://<IP-ADRESSE>:1880`
@@ -512,32 +554,50 @@ mosquitto_pub -h 127.0.0.1 -t "spansug/gate/test/cmd" -m "OPEN"
 ```
 
 ### Opdatering af eksisterende backend
-Hvis du skal opdatere en kørende backend:
 
-**Windows:**
+Hvis du skal opdatere en kørende backend med nye flows eller filer:
+
+**Windows (med automatisk flow-import) - ANBEFALET:**
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\deploy-to-pi.ps1
+powershell -ExecutionPolicy Bypass -File .\deploy-to-pi.ps1 -QuickUpdate
 ```
 
-**Mac/Linux:**
+Dette gør alt automatisk:
+1. Kopier nye fil-ændringer til Pi'en
+2. Importer Node-RED flows automatisk
+3. Genstarter Node-RED
+
+**Mac/Linux (uden auto-import):**
 ```bash
 bash deploy-to-pi.sh
 ```
 
-Eller brug opdaterings scriptet direkte på Raspberry Pi:
+Derefter kan du importere flows manuelt:
 ```bash
-# På Raspberry Pi - opdater flows automatisk
-bash ~/spansug-backend/update-pi.sh
+ssh pi@spansug-backend.local
+cd ~/spansug-backend
+bash import-nodered-flows.sh
 ```
 
-Dette script:
-- Kopierer opdaterede flow filer til Node-RED
-- Genstarter Node-RED service automatisk
-- Bevarer eksisterende konfiguration og credentials
+**Alternativ: Opdater kun på Pi'en (uden at push fra desktop):**
+
+SSH til Raspberry Pi:
+```bash
+ssh pi@spansug-backend.local
+cd ~/spansug-backend
+bash update-pi.sh        # Opdater web dashboard ved behov
+bash import-nodered-flows.sh  # Reimporter alle flows
+```
+
+**Noter:**
+- Deploy scripts er idempotent (kan køres flere gange uden konsekvens)
+- Backups af flows gemmes i `~/.node-red/backups/` på Pi'en
+- Ingen downtime - services genstartes elegant
+- Eksisterende konfiguration bevares
 
 ---
 
-## Dashboard (v2.1.0)
+## Dashboard (v2.2.0)
 
 Web dashboardet viser realtid status på alle gates og kan tilgås på:
 ```
@@ -551,22 +611,26 @@ http://spansug-backend.local
 - Sensor-forbindelsestatus (online/offline) for eksterne sensorer
 - Maskinstatus (Active/Inactive)
 
-**Aktivitetslog (Nyt i v2.1.0):**
-- Logning af alle machine_active state changes
-- Viser dato + tidspunkt for hver aktivitet
-- Data gemmes lokalt i browser localStorage (holder ved reload)
-- "Ryd Log" knap for at slette historie
-- Farvekodning (grøn for tændt, grå for slukket)
+**Aktivitetslog (Nyt i v2.2.0):**
+- Loger alle vakuum on/off events med tidspunkter
+- Data **gemmes på serveren** (Raspberry Pi) i `/home/pi/spansug-vacuum-log.jsonl`
+- Historik beholder 200+ seneste entries
+- Viser hvilke maskiner der var aktive da vakuum blev tændt/slukket
+- Farvekodning (grøn = vakuum på, rød = vakuum ud)
+- Log kan ikke slettes fra dashboardet (kræver admin-adgang til Pi'en)
 
-**UI/UX forbedringer:**
-- Lilla gradient-baggrund (alle sider)
-- SVG favicons med branding (fabrik-ikon til dashboard)
-- Responsive design for alle skærmstørrelser
+**Server-side logging benefits:**
+- ✅ Data går ikke tabt ved browser-refresh
+- ✅ Fuld historik bevares på Pi'en
+- ✅ Kan åbnes på forskellige devices
+- ✅ Kan hentes via API: `GET /api/spansug-log?limit=200`
 
 ### Dashboard versionering
-Versionsnummeret vises i connection status bar. Opdater ved ændringer:
+Versionsnummeret vises i connection status bar: `v2.2.0`
+
+Opdater konstanten i `web/dashboard.html` ved ændringer:
 ```javascript
-const DASHBOARD_VERSION = 'v2.1.0';  // web/dashboard.html
+const DASHBOARD_VERSION = 'v2.2.0';
 ```
 
 ---
