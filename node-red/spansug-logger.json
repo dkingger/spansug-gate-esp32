@@ -1,0 +1,189 @@
+[
+    {
+        "id": "spansug_logger_flow",
+        "type": "tab",
+        "label": "Spånsug Logger",
+        "disabled": false,
+        "info": "Logger spånsug-aktivitet til fil på Pi. Sporer vacuum on/off med aktive maskiner.",
+        "env": []
+    },
+    {
+        "id": "logger_mqtt_machine",
+        "type": "mqtt in",
+        "z": "spansug_logger_flow",
+        "name": "Machine Active",
+        "topic": "spansug/gate/+/machine_active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "logger_track_machines"
+            ]
+        ]
+    },
+    {
+        "id": "logger_track_machines",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Track Machine States",
+        "func": "// Gate name mapping\nconst GATE_NAMES = {\n    'stor_cnc': 'Stor CNC',\n    'lille_cnc': 'Lille CNC',\n    'rundsav': 'Rundsav',\n    'disponibel_1': 'Disponibel 1',\n    'disponibel_2': 'Disponibel 2',\n    'rondelsliber': 'Rondelsliber',\n    'baandsliber': 'Båndsliber'\n};\n\n// Get gate ID from topic\nconst parts = msg.topic.split('/');\nconst gateId = parts[2];\nconst isActive = msg.payload === '1';\n\n// Store in flow context\nlet machines = flow.get('activeMachines') || {};\nmachines[gateId] = isActive;\nflow.set('activeMachines', machines);\n\n// Store name mapping\nflow.set('gateNames', GATE_NAMES);\n\nreturn null;",
+        "outputs": 0,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "logger_mqtt_vacuum",
+        "type": "mqtt in",
+        "z": "spansug_logger_flow",
+        "name": "Vacuum Active",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 200,
+        "wires": [
+            [
+                "logger_vacuum_change"
+            ]
+        ]
+    },
+    {
+        "id": "logger_vacuum_change",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Log Vacuum Change",
+        "func": "const isActive = msg.payload === '1';\nconst prevState = flow.get('vacuumState');\n\n// Skip if no change (including first retained message)\nif (prevState === isActive) {\n    return null;\n}\nflow.set('vacuumState', isActive);\n\n// Skip the very first message (retained) to avoid false log entry\nif (prevState === undefined) {\n    return null;\n}\n\n// Get active machines\nconst machines = flow.get('activeMachines') || {};\nconst GATE_NAMES = flow.get('gateNames') || {};\n\nconst activeMachines = [];\nfor (const [gateId, active] of Object.entries(machines)) {\n    if (active) {\n        activeMachines.push(GATE_NAMES[gateId] || gateId);\n    }\n}\n\nconst entry = {\n    timestamp: new Date().toISOString(),\n    vacuumActive: isActive,\n    activeMachines: activeMachines\n};\n\nmsg.payload = JSON.stringify(entry) + '\\n';\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 200,
+        "wires": [
+            [
+                "logger_file_append",
+                "logger_debug"
+            ]
+        ]
+    },
+    {
+        "id": "logger_file_append",
+        "type": "file",
+        "z": "spansug_logger_flow",
+        "name": "Append to log",
+        "filename": "/home/pi/spansug-vacuum-log.jsonl",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 660,
+        "y": 200,
+        "wires": [[]]
+    },
+    {
+        "id": "logger_debug",
+        "type": "debug",
+        "z": "spansug_logger_flow",
+        "name": "Log Entry",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 650,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "logger_http_in",
+        "type": "http in",
+        "z": "spansug_logger_flow",
+        "name": "GET /api/spansug-log",
+        "url": "/api/spansug-log",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 360,
+        "wires": [
+            [
+                "logger_file_read"
+            ]
+        ]
+    },
+    {
+        "id": "logger_file_read",
+        "type": "file in",
+        "z": "spansug_logger_flow",
+        "name": "Read log file",
+        "filename": "/home/pi/spansug-vacuum-log.jsonl",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 410,
+        "y": 360,
+        "wires": [
+            [
+                "logger_parse_log"
+            ]
+        ]
+    },
+    {
+        "id": "logger_parse_log",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Parse & Format",
+        "func": "const data = msg.payload || '';\nconst lines = data.trim().split('\\n').filter(l => l.length > 0);\nconst entries = lines.map(line => {\n    try { return JSON.parse(line); }\n    catch(e) { return null; }\n}).filter(e => e !== null);\n\n// Return newest first\nentries.reverse();\nconst limit = parseInt((msg.req.query && msg.req.query.limit) || 200);\nmsg.payload = entries.slice(0, limit);\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "logger_http_out"
+            ]
+        ]
+    },
+    {
+        "id": "logger_http_out",
+        "type": "http response",
+        "z": "spansug_logger_flow",
+        "name": "Response",
+        "statusCode": "200",
+        "headers": {},
+        "x": 640,
+        "y": 360,
+        "wires": []
+    }
+]

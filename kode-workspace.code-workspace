@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../LEDstrip-tester"
+		},
+		{
+			"name": "LED scanner",
+			"path": "../LED scanner"
+		},
+		{
+			"name": "spansug-gate-esp32",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

@@ -6,12 +6,18 @@
 #include <Preferences.h>
 #include "secrets.h"
 
+#ifdef OTA_ENABLED
+#include <ArduinoOTA.h>
+#include <ESPmDNS.h>
+static const char* OTA_PASSWORD = "fablabvejle!";
+#endif
+
 // --------- USER CONFIG ----------
 
 static const char* MQTT_HOST = "spansug-backend.local";  // Debian server
 static const uint16_t MQTT_PORT = 1883;
 
-static const char* GATE_ID = "lille_cnc";
+static const char* GATE_ID = "baandsliber";
 
 // Topics
 static String topic_cmd    = String("spansug/gate/") + GATE_ID + "/cmd";
@@ -318,6 +324,41 @@ void setup() {
   lastSwitch = digitalRead(SWITCH_PIN);
 
   wifiConnect();
+
+#ifdef OTA_ENABLED
+  // OTA setup
+  ArduinoOTA.setHostname(GATE_ID);
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  ArduinoOTA.setPort(3232);
+
+  ArduinoOTA.onStart([]() {
+    String type = (ArduinoOTA.getCommand() == U_FLASH) ? "sketch" : "filesystem";
+    Serial.println("OTA update started: " + type);
+    mqtt.disconnect();
+  });
+
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA update finished - rebooting");
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("OTA Progress: %u%%\r", (progress * 100) / total);
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("OTA Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+
+  ArduinoOTA.begin();
+  Serial.print("OTA ready: ");
+  Serial.println(GATE_ID);
+#endif
+
   mqttConnect();
 
   // publish initial state
@@ -331,6 +372,10 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) wifiConnect();
   if (!mqtt.connected()) mqttConnect();
   mqtt.loop();
+
+#ifdef OTA_ENABLED
+  ArduinoOTA.handle();
+#endif
 
   // Blink LED hvis vi er i WAIT
   updateBlink();

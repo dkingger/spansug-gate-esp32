@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spånsug Dashboard - FabLab</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='roof' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23e36452;stop-opacity:1'/><stop offset='100%' style='stop-color:%23943f3f;stop-opacity:1'/></linearGradient><linearGradient id='walls' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%23b09999;stop-opacity:1'/><stop offset='100%' style='stop-color:%23e1d7d7;stop-opacity:1'/></linearGradient><linearGradient id='window' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%2300ffff;stop-opacity:1'/><stop offset='100%' style='stop-color:%2300b2ff;stop-opacity:1'/></linearGradient></defs><path d='M10 35 L50 10 L90 35 Z' fill='url(%23roof)' stroke='%23943f3f' stroke-width='1.5'/><rect x='15' y='35' width='70' height='50' rx='2' fill='url(%23walls)' stroke='%23943f3f' stroke-width='1'/><rect x='25' y='45' width='12' height='12' fill='url(%23window)' stroke='%2300b2ff' stroke-width='0.5'/><rect x='63' y='45' width='12' height='12' fill='url(%23window)' stroke='%2300b2ff' stroke-width='0.5'/><rect x='25' y='65' width='12' height='12' fill='url(%23window)' stroke='%2300b2ff' stroke-width='0.5'/><rect x='63' y='65' width='12' height='12' fill='url(%23window)' stroke='%2300b2ff' stroke-width='0.5'/><rect x='44' y='20' width='4' height='45' fill='%23483737' stroke='%23483737' stroke-width='0.5'/><circle cx='46' cy='18' r='2.5' fill='%23ffb200' stroke='%23ff9900' stroke-width='0.5'/></svg>">
     <style>
         * {
@@ -322,7 +322,8 @@
         </div>
 
     <script>
-        const DASHBOARD_VERSION = 'v2.1.0';
+        const DASHBOARD_VERSION = 'v2.2.0';
+        const LOG_API = 'http://spansug-backend.local:1880/api/spansug-log';
 
         // MQTT Configuration
         const MQTT_BROKER = 'ws://spansug-backend.local:9001'; // WebSocket port
@@ -406,8 +407,13 @@
             
             // Check for vacuum status
             if (topic === 'spansug/vacuum/active') {
+                const wasActive = vacuumActive;
                 vacuumActive = payload === '1';
                 updateVacuumStatus();
+                // Reload log from server when vacuum state changes
+                if (wasActive !== vacuumActive) {
+                    setTimeout(loadEventLog, 1000);
+                }
                 return;
             }
             
@@ -482,15 +488,7 @@
             if (property === 'state') {
                 gate.state = payload.toLowerCase();
             } else if (property === 'machine_active') {
-                const oldState = gate.machine_active;
-                const newState = payload === '1';
-                
-                // Log only when state changes
-                if (oldState !== newState) {
-                    addEventLog(gateId, gate.name, newState);
-                }
-                
-                gate.machine_active = newState;
+                gate.machine_active = payload === '1';
             }
             
             gate.lastUpdate = new Date();
@@ -604,55 +602,20 @@
             updateEl.textContent = `Sidst opdateret: ${now.toLocaleTimeString('da-DK')}`;
         }
 
-        function addEventLog(gateId, gateName, isActive) {
-            // Log all machine_active state changes for all gates
-            const entry = {
-                timestamp: new Date(),
-                gateId: gateId,
-                gateName: gateName,
-                active: isActive
-            };
-
-            eventLog.unshift(entry); // Add to beginning
-
-            // Keep only last MAX_LOG_ENTRIES
-            if (eventLog.length > MAX_LOG_ENTRIES) {
-                eventLog.pop();
-            }
-
-            // Save to localStorage
-            saveEventLog();
-
-            // Update UI
-            renderEventLog();
-        }
-
-        function saveEventLog() {
-            const logData = eventLog.map(entry => ({
-                timestamp: entry.timestamp.getTime(),
-                gateId: entry.gateId,
-                gateName: entry.gateName,
-                active: entry.active
-            }));
-            localStorage.setItem('spansug-event-log', JSON.stringify(logData));
-        }
-
         function loadEventLog() {
-            const stored = localStorage.getItem('spansug-event-log');
-            if (stored) {
-                try {
-                    const logData = JSON.parse(stored);
-                    eventLog = logData.map(entry => ({
+            fetch(LOG_API + '?limit=' + MAX_LOG_ENTRIES)
+                .then(res => res.json())
+                .then(data => {
+                    eventLog = data.map(entry => ({
                         timestamp: new Date(entry.timestamp),
-                        gateId: entry.gateId,
-                        gateName: entry.gateName,
-                        active: entry.active
+                        vacuumActive: entry.vacuumActive,
+                        activeMachines: entry.activeMachines || []
                     }));
                     renderEventLog();
-                } catch (e) {
-                    console.error('Error loading event log:', e);
-                }
-            }
+                })
+                .catch(err => {
+                    console.error('Fejl ved hentning af log:', err);
+                });
         }
 
         function renderEventLog() {
@@ -663,17 +626,25 @@
                 return;
             }
 
-            listEl.innerHTML = eventLog.map((entry, index) => {
+            listEl.innerHTML = eventLog.map(entry => {
                 const time = entry.timestamp.toLocaleTimeString('da-DK');
                 const date = entry.timestamp.toLocaleDateString('da-DK');
-                const status = entry.active ? 'Tændt' : 'Slukket';
-                const statusClass = entry.active ? 'on' : 'off';
+                const statusClass = entry.vacuumActive ? 'on' : 'off';
+
+                let description;
+                if (entry.vacuumActive) {
+                    const machines = entry.activeMachines.length > 0
+                        ? entry.activeMachines.join(', ')
+                        : 'ukendt';
+                    description = `Spånsug TÆNDT — ${machines}`;
+                } else {
+                    description = 'Spånsug SLUKKET';
+                }
 
                 return `
                     <div class="log-entry ${statusClass}">
                         <div class="log-info">
-                            <div class="log-gate">⚡ ${entry.gateName}</div>
-                            <span class="log-status ${statusClass}">${status}</span>
+                            <div class="log-gate">${entry.vacuumActive ? '🟢' : '🔴'} ${description}</div>
                             <span style="color: #666; font-size: 0.9em;">${date}</span>
                         </div>
                         <div class="log-time">${time}</div>
@@ -683,11 +654,7 @@
         }
 
         function clearEventLog() {
-            if (confirm('Er du sikker på, at du vil slette hele aktivitetsloggen?')) {
-                eventLog = [];
-                localStorage.removeItem('spansug-event-log');
-                renderEventLog();
-            }
+            alert('Loggen gemmes på serveren. Kontakt admin for at rydde den.');
         }
         
         // Initialize
@@ -698,6 +665,9 @@
         
         // Update clock every second
         setInterval(updateLastUpdate, 1000);
+        
+        // Refresh log from server every 30 seconds
+        setInterval(loadEventLog, 30000);
     </script>
 </body>
 </html>
