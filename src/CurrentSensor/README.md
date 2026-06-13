@@ -36,9 +36,9 @@ ZMCT103C Module:
 Voltage Divider (5V → 3.3V):
 ┌─── ZMCT103C Signal Out
 │
-├─── R1 (10kΩ) ───┬─── ESP32 GPIO 4 (ADC)
-│                 │
-└─── R2 (20kΩ) ───┴─── GND
+├─── R1 (10kΩ) ────── ESP32 GPIO 4 (ADC)
+│                 
+└─── R2 (20kΩ) ────── GND
 
 AC Wire Path:
 Netspænding (230V) → Strømførende ledning gennem ZMCT103C "donut"
