@@ -152,7 +152,7 @@ const unsigned long mqttRetryInterval = 5000; // Try reconnect every 5 seconds
 void reconnectMQTT() {
   // Non-blocking reconnect - only try once per call
   if (!client.connected()) {
-    unsigned long now = millis();
+    unsigned long long now = millis();
     if (now - lastMQTTAttempt >= mqttRetryInterval) {
       lastMQTTAttempt = now;
       Serial.println("Attempting MQTT connection...");
