@@ -5,6 +5,8 @@ param(
     [switch]$QuickUpdate = $false
 )
 
+Set-Location (Join-Path $PSScriptRoot "..")
+
 $PI_HOST = "spansug-backend.local" # Raspberry Pi hostname
 $PI_USER = "pi" # standard bruger på Raspberry Pi
 $PI_PASS = "raspberry" # standard password på Raspberry Pi (ændr hvis nødvendigt)
@@ -68,7 +70,7 @@ scp web/dashboard.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Kopier index.html fra data mappen
 Write-Host "`nKopierer data filer..." -ForegroundColor Green
-scp data/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
+scp web/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Publicer web filer til Apache document root
 Write-Host "`nPublicerer web filer til /var/www/html/..." -ForegroundColor Green
@@ -76,17 +78,17 @@ ssh ${PI_USER}@${PI_HOST} "sudo cp ~/spansug-backend/web/dashboard.html /var/www
 
 # Kopier debug script
 Write-Host "`nKopierer debug script..." -ForegroundColor Green
-scp debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+scp scripts/debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/debug-backend.sh"
 
 # Kopier installations script
 Write-Host "`nKopierer installations script..." -ForegroundColor Green
-scp install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+scp scripts/install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/install-pi.sh"
 
 # Kopier Node-RED import script
 Write-Host "`nKopierer Node-RED import script..." -ForegroundColor Green
-scp import-nodered-flows.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+scp scripts/import-nodered-flows.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/import-nodered-flows.sh"
 
 # Hvis QuickUpdate, importer flows automatisk

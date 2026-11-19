@@ -15,7 +15,7 @@ ESP32-C3 firmware for measuring machine current with a ZMCT103C current transfor
 
 ## Hardware
 
-- ESP32-C3 DevKitM-1
+- ESP32-C3 (PlatformIO board: `esp32-c3-devkitm-1`)
 - ZMCT103C current transformer module
 - The sensor module is powered from 5 V
 - Sensor output is connected to GPIO 4 through the configured voltage divider
@@ -46,11 +46,11 @@ Do not commit real Wi-Fi credentials or other secrets.
 
 ## Build and Upload
 
-Install PlatformIO, connect the ESP32-C3, and run:
+Open this `firmware/` directory in PlatformIO. Run the following commands from this directory:
 
 ```sh
-pio run --environment esp32-c3-devkitm-1
-pio run --target upload --environment esp32-c3-devkitm-1 --upload-port /dev/cu.usbmodemXXXX
+pio run --environment currentsensor
+pio run --target upload --environment currentsensor --upload-port /dev/cu.usbmodemXXXX
 pio device monitor --port /dev/cu.usbmodemXXXX --baud 115200
 ```
 
@@ -105,5 +105,5 @@ The last synchronized boot time is stored in flash and shown on the web page as 
 Build the target with:
 
 ```sh
-pio run --environment esp32-c3-devkitm-1
+pio run --environment currentsensor
 ```

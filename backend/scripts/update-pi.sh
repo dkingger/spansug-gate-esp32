@@ -4,6 +4,13 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -d "$SCRIPT_DIR/../web" ]; then
+    cd "$SCRIPT_DIR/.."
+else
+    cd "$SCRIPT_DIR"
+fi
+
 echo "=================================="
 echo "Spånsug Backend - Quick Update"
 echo "=================================="
@@ -21,13 +28,13 @@ fi
 
 # Update web files
 echo -e "\n${BLUE}[1/3] Updating web dashboard...${NC}"
-if [ -f "dashboard.html" ]; then
-    sudo cp dashboard.html /var/www/html/
+if [ -f "web/dashboard.html" ]; then
+    sudo cp web/dashboard.html /var/www/html/
     echo -e "${GREEN}✓ Updated dashboard.html${NC}"
 fi
 
-if [ -f "index.html" ]; then
-    sudo cp index.html /var/www/html/
+if [ -f "web/index.html" ]; then
+    sudo cp web/index.html /var/www/html/
     echo -e "${GREEN}✓ Updated index.html${NC}"
 fi
 

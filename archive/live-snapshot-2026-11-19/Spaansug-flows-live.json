@@ -1,0 +1,4424 @@
+[
+    {
+        "id": "led_test_flow",
+        "type": "tab",
+        "label": "Spansug LED Test",
+        "disabled": false,
+        "info": "Manual LED test via MQTT state topics"
+    },
+    {
+        "id": "emergency_stop_flow",
+        "type": "tab",
+        "label": "Emergency Stop",
+        "disabled": false,
+        "info": "Nød-stop knap til at lukke alle gates og stoppe udsugning"
+    },
+    {
+        "id": "rondelsliber_flow",
+        "type": "tab",
+        "label": "Rondelsliber Gate",
+        "disabled": false,
+        "info": "Gate controller for rondelsliber with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "relay_manager_flow",
+        "type": "tab",
+        "label": "Spånsug Relay Manager",
+        "disabled": false,
+        "info": "Central relay manager - tracks all gates and controls dust collector relay",
+        "env": []
+    },
+    {
+        "id": "gate_status_leds_flow",
+        "type": "tab",
+        "label": "Gate Status LEDs",
+        "disabled": false,
+        "info": "Viser status for alle 6 gates + vacuum status med LED på Raspberry Pi GPIO"
+    },
+    {
+        "id": "baandsliber_flow",
+        "type": "tab",
+        "label": "Båndsliber Gate",
+        "disabled": false,
+        "info": "Gate controller for baandsliber with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "disponibel_1_flow",
+        "type": "tab",
+        "label": "Disponibel 1 Gate",
+        "disabled": false,
+        "info": "Gate controller for disponibel_1 with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "disponibel_2_flow",
+        "type": "tab",
+        "label": "Disponibel 2 Gate",
+        "disabled": false,
+        "info": "Gate controller for disponibel_2 with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "b2c3d4e5f6g7h8i9",
+        "type": "tab",
+        "label": "Lille CNC Gate",
+        "disabled": false,
+        "info": "Gate controller for lille_cnc with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "rundsav_flow",
+        "type": "tab",
+        "label": "Rundsav Gate",
+        "disabled": false,
+        "info": "Gate controller for rundsav with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "a1b2c3d4e5f6g7h8",
+        "type": "tab",
+        "label": "Stor CNC Gate",
+        "disabled": false,
+        "info": "Gate controller for stor_cnc with variable afterrun delay and relay control",
+        "env": []
+    },
+    {
+        "id": "tab1",
+        "type": "tab",
+        "label": "Relay control",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "fc26bf8841cd2248",
+        "type": "tab",
+        "label": "Debug Simulering",
+        "disabled": false,
+        "info": "Simuler MQTT-kald fra ESP32 til fejlsøgning af udsugnings-automatik",
+        "env": []
+    },
+    {
+        "id": "spansug_logger_flow",
+        "type": "tab",
+        "label": "Spånsug Logger",
+        "disabled": false,
+        "info": "Logger spånsug-aktivitet til fil på Pi. Sporer vacuum on/off med aktive maskiner.",
+        "env": []
+    },
+    {
+        "id": "56f78bf9bbcbca4b",
+        "type": "subflow",
+        "name": "Gate Controller",
+        "info": "",
+        "category": "",
+        "in": [],
+        "out": [],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "675a7eb26a300987",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "mqtt_broker",
+        "type": "mqtt-broker",
+        "name": "Local Mosquitto",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "mqtt_broker1",
+        "type": "mqtt-broker",
+        "name": "Mosquitto",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "nodered",
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "ui_tab1",
+        "type": "ui_tab",
+        "name": "ESP32",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ui_group1",
+        "type": "ui_group",
+        "name": "Relay",
+        "tab": "ui_tab1",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "6d08168edca7cbdd",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "inject_led_test",
+        "type": "inject",
+        "z": "led_test_flow",
+        "name": "Test LEDs (2s)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "trig_rundsav",
+                "trig_disponibel_1",
+                "trig_disponibel_2",
+                "trig_lille_cnc",
+                "trig_stor_cnc",
+                "trig_rondelsliber",
+                "trig_baandsliber",
+                "trig_vacuum"
+            ]
+        ]
+    },
+    {
+        "id": "trig_rundsav",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Rundsav open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 380,
+        "y": 60,
+        "wires": [
+            [
+                "mqtt_rundsav_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_disponibel_1",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Disponibel 1 open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 400,
+        "y": 110,
+        "wires": [
+            [
+                "mqtt_disponibel_1_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_disponibel_2",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Disponibel 2 open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 400,
+        "y": 135,
+        "wires": [
+            [
+                "mqtt_disponibel_2_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_lille_cnc",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Lille CNC open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 400,
+        "y": 160,
+        "wires": [
+            [
+                "mqtt_lille_cnc_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_stor_cnc",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Stor CNC open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 390,
+        "y": 210,
+        "wires": [
+            [
+                "mqtt_stor_cnc_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_rondelsliber",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Rondelsliber open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 410,
+        "y": 260,
+        "wires": [
+            [
+                "mqtt_rondelsliber_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_baandsliber",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Baandsliber open->closed",
+        "op1": "open",
+        "op2": "closed",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 410,
+        "y": 310,
+        "wires": [
+            [
+                "mqtt_baandsliber_state"
+            ]
+        ]
+    },
+    {
+        "id": "trig_vacuum",
+        "type": "trigger",
+        "z": "led_test_flow",
+        "name": "Vacuum 1->0",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "num",
+        "op2type": "num",
+        "duration": "2",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "",
+        "outputs": 1,
+        "x": 360,
+        "y": 360,
+        "wires": [
+            [
+                "mqtt_vacuum_active"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_rundsav_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "rundsav/state",
+        "topic": "spansug/gate/rundsav/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 640,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "mqtt_disponibel_1_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "disponibel_1/state",
+        "topic": "spansug/gate/disponibel_1/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 650,
+        "y": 110,
+        "wires": []
+    },
+    {
+        "id": "mqtt_disponibel_2_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "disponibel_2/state",
+        "topic": "spansug/gate/disponibel_2/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 650,
+        "y": 135,
+        "wires": []
+    },
+    {
+        "id": "mqtt_lille_cnc_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "lille_cnc/state",
+        "topic": "spansug/gate/lille_cnc/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 650,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "mqtt_stor_cnc_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "stor_cnc/state",
+        "topic": "spansug/gate/stor_cnc/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 650,
+        "y": 210,
+        "wires": []
+    },
+    {
+        "id": "mqtt_rondelsliber_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "rondelsliber/state",
+        "topic": "spansug/gate/rondelsliber/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 660,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "mqtt_baandsliber_state",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "baandsliber/state",
+        "topic": "spansug/gate/baandsliber/state",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 650,
+        "y": 310,
+        "wires": []
+    },
+    {
+        "id": "mqtt_vacuum_active",
+        "type": "mqtt out",
+        "z": "led_test_flow",
+        "name": "vacuum/active",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 640,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "gpio_button_input",
+        "type": "rpi-gpio in",
+        "z": "emergency_stop_flow",
+        "name": "Emergency Stop Button",
+        "pin": "23",
+        "intype": "up",
+        "debounce": "25",
+        "read": true,
+        "bcm": true,
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "detect_button_press",
+                "debug_button"
+            ]
+        ]
+    },
+    {
+        "id": "detect_button_press",
+        "type": "function",
+        "z": "emergency_stop_flow",
+        "name": "Detect Button Press & Close All Gates",
+        "func": "// Kun når button trykkes (LOW = 0 med pull-up)\nif (msg.payload === 0 || msg.payload === \"0\") {\n    \n    var gates = [\n        \"rundsav\",\n        \"disponibel\",\n        \"stor_cnc\",\n        \"lille_cnc\",\n        \"rondelsliber\",\n        \"baandsliber\"\n    ];\n    \n    var messages = [];\n    \n    // Send CLOSE kommando til hver gate\n    for (var i = 0; i < gates.length; i++) {\n        messages.push({\n            topic: \"spansug/gate/\" + gates[i] + \"/cmd\",\n            payload: \"CLOSE\"\n        });\n    }\n    \n    // Log event\n    node.warn(\"🛑 EMERGENCY STOP - Lukker alle gates!\");\n    \n    return [messages];\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 100,
+        "wires": [
+            [
+                "mqtt_out",
+                "debug_close_cmd"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out",
+        "type": "mqtt out",
+        "z": "emergency_stop_flow",
+        "name": "Send to MQTT",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker",
+        "x": 750,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "debug_button",
+        "type": "debug",
+        "z": "emergency_stop_flow",
+        "name": "Button State",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "debug_close_cmd",
+        "type": "debug",
+        "z": "emergency_stop_flow",
+        "name": "CLOSE Commands",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "comment_hardware",
+        "type": "comment",
+        "z": "emergency_stop_flow",
+        "name": "Hardware: Momentary button mellem GPIO 23 og GND (intern pull-up aktiveret)",
+        "info": "**Hardware tilslutning:**\n\n```\nGPIO 23 → Momentary Button → GND\nGPIO 22 → 220Ω → LED (+) → LED (-) → GND (optional status LED)\n```\n\n**Funktionalitet:**\n- Button tryk detekteres når GPIO 23 går LOW (0)\n- Sender CLOSE kommando til alle gates\n- Status LED på GPIO 22 blinker 3 gange ved aktivering\n- Relay Manager slukker automatisk udsugning når alle gates er lukket\n\n**Pins i brug:**\n- GPIO 23: Emergency stop button\n- GPIO 18: Relay til udsugning (OPTAGET - ikke til LED!)\n- GPIO 22: Status LED\n\n**Test:**\n1. Tryk på button\n2. Se debug output i Node-RED\n3. Verificer at alle gates lukker\n4. Verificer at udsugning stopper",
+        "x": 350,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "led_indicator",
+        "type": "rpi-gpio out",
+        "z": "emergency_stop_flow",
+        "name": "Status LED",
+        "pin": "22",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 790,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "led_flash",
+        "type": "function",
+        "z": "emergency_stop_flow",
+        "name": "Flash LED on button press",
+        "func": "// Flash LED 3 gange når button trykkes\nif (msg.payload === 0 || msg.payload === \"0\") {\n    var flash = [];\n    \n    for (var i = 0; i < 6; i++) {\n        flash.push({\n            payload: i % 2,\n            delay: i * 200\n        });\n    }\n    \n    return [flash];\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 280,
+        "wires": [
+            [
+                "delay_led"
+            ]
+        ]
+    },
+    {
+        "id": "delay_led",
+        "type": "delay",
+        "z": "emergency_stop_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 600,
+        "y": 240,
+        "wires": [
+            [
+                "led_indicator"
+            ]
+        ]
+    },
+    {
+        "id": "wire_button_to_led",
+        "type": "link out",
+        "z": "emergency_stop_flow",
+        "name": "",
+        "mode": "link",
+        "links": [],
+        "x": 295,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_rondelsliber",
+        "type": "mqtt in",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/rondelsliber/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 240,
+        "y": 320,
+        "wires": [
+            [
+                "switch_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "switch_rondelsliber",
+        "type": "switch",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "change_open_rondelsliber"
+            ],
+            [
+                "change_wait_rondelsliber",
+                "function_delay_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_open_rondelsliber",
+        "type": "change",
+        "z": "rondelsliber_flow",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_open_rondelsliber",
+                "change_reset_timer_rondelsliber",
+                "debug_open_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_close_rondelsliber",
+        "type": "change",
+        "z": "rondelsliber_flow",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_close_rondelsliber",
+                "debug_close_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "inject_delay_rondelsliber",
+        "type": "inject",
+        "z": "rondelsliber_flow",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "10",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "change_store_delay_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_store_delay_rondelsliber",
+        "type": "change",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_delay_rondelsliber",
+        "type": "function",
+        "z": "rondelsliber_flow",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 20);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "delay_rondelsliber",
+        "type": "delay",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "change_close_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_close_rondelsliber",
+        "type": "mqtt out",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/rondelsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_open_rondelsliber",
+        "type": "mqtt out",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/rondelsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "change_reset_timer_rondelsliber",
+        "type": "change",
+        "z": "rondelsliber_flow",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "debug_close_rondelsliber",
+        "type": "debug",
+        "z": "rondelsliber_flow",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1340,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "debug_open_rondelsliber",
+        "type": "debug",
+        "z": "rondelsliber_flow",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "change_wait_rondelsliber",
+        "type": "change",
+        "z": "rondelsliber_flow",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 440,
+        "wires": [
+            [
+                "mqtt_out_wait_rondelsliber",
+                "debug_wait_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_wait_rondelsliber",
+        "type": "mqtt out",
+        "z": "rondelsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/rondelsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "debug_wait_rondelsliber",
+        "type": "debug",
+        "z": "rondelsliber_flow",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "mqtt_gate_commands",
+        "type": "mqtt in",
+        "z": "relay_manager_flow",
+        "name": "All gate commands",
+        "topic": "spansug/gate/+/cmd",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "gate_state_tracker"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_gate_status",
+        "type": "mqtt in",
+        "z": "relay_manager_flow",
+        "name": "Manual gate status",
+        "topic": "spansug/gate/+/status",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "gate_state_tracker"
+            ]
+        ]
+    },
+    {
+        "id": "gate_state_tracker",
+        "type": "function",
+        "z": "relay_manager_flow",
+        "name": "Track gate states",
+        "func": "// Initialize gate states in flow context\nlet gates = flow.get('gates') || {};\n\n// Extract gate ID from topic (e.g., \"spansug/gate/rundsav_auto/cmd\" -> \"rundsav_auto\")\nconst topicParts = msg.topic.split('/');\nconst gateId = topicParts[2];\nconst command = msg.payload;\n\n// Update gate state\nif (command === 'OPEN' || command === 'WAIT' || command === 'ÅBEN') {\n    gates[gateId] = 'OPEN';\n} else if (command === 'CLOSE' || command === 'LUKKET') {\n    gates[gateId] = 'CLOSED';\n}\n\n// Save updated states\nflow.set('gates', gates);\n\n// Count open gates\nlet openCount = 0;\nfor (let gate in gates) {\n    if (gates[gate] === 'OPEN') {\n        openCount++;\n    }\n}\n\n// Decide relay state\nif (openCount > 0) {\n    msg.payload = 1;  // Relay ON\n    msg.status = openCount + ' gate(s) open';\n} else {\n    msg.payload = 0;  // Relay OFF\n    msg.status = 'All gates closed';\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 130,
+        "wires": [
+            [
+                "debug_relay_state",
+                "relay_output",
+                "mqtt_vacuum_status"
+            ]
+        ]
+    },
+    {
+        "id": "debug_relay_state",
+        "type": "debug",
+        "z": "relay_manager_flow",
+        "name": "Relay status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "status",
+        "targetType": "msg",
+        "statusVal": "status",
+        "statusType": "msg",
+        "x": 630,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "relay_output",
+        "type": "rpi-gpio out",
+        "z": "relay_manager_flow",
+        "name": "Dust collector relay",
+        "pin": "18",
+        "set": "",
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 660,
+        "y": 130,
+        "wires": []
+    },
+    {
+        "id": "mqtt_vacuum_status",
+        "type": "mqtt out",
+        "z": "relay_manager_flow",
+        "name": "Publish vacuum status",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 680,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "mqtt_rundsav",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "rundsav state",
+        "topic": "spansug/gate/rundsav/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [
+                "led_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_disponibel_1",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "disponibel_1 state",
+        "topic": "spansug/gate/disponibel_1/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "led_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_disponibel_2",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "disponibel_2 state",
+        "topic": "spansug/gate/disponibel_2/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 140,
+        "y": 170,
+        "wires": [
+            [
+                "led_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_lille_cnc",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "lille_cnc state",
+        "topic": "spansug/gate/lille_cnc/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 120,
+        "y": 200,
+        "wires": [
+            [
+                "led_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_stor_cnc",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "stor_cnc state",
+        "topic": "spansug/gate/stor_cnc/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 120,
+        "y": 260,
+        "wires": [
+            [
+                "led_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_rondelsliber",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "rondelsliber state",
+        "topic": "spansug/gate/rondelsliber/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 130,
+        "y": 320,
+        "wires": [
+            [
+                "led_rondelsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_baandsliber",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "baandsliber state",
+        "topic": "spansug/gate/baandsliber/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 120,
+        "y": 380,
+        "wires": [
+            [
+                "led_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_vacuum",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "vacuum active",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 120,
+        "y": 440,
+        "wires": [
+            [
+                "led_vacuum"
+            ]
+        ]
+    },
+    {
+        "id": "led_rundsav",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 21",
+        "func": "// Tænd LED hvis gate er åben\nconst state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 80,
+        "wires": [
+            [
+                "gpio_21"
+            ]
+        ]
+    },
+    {
+        "id": "led_disponibel_1",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 26 (Disponibel 1)",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 140,
+        "wires": [
+            [
+                "gpio_26"
+            ]
+        ]
+    },
+    {
+        "id": "led_disponibel_2",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 11 (Disponibel 2)",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 170,
+        "wires": [
+            [
+                "gpio_11"
+            ]
+        ]
+    },
+    {
+        "id": "led_lille_cnc",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 16",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 200,
+        "wires": [
+            [
+                "gpio_16"
+            ]
+        ]
+    },
+    {
+        "id": "led_stor_cnc",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 13",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "gpio_13"
+            ]
+        ]
+    },
+    {
+        "id": "led_rondelsliber",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 19",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 320,
+        "wires": [
+            [
+                "gpio_19"
+            ]
+        ]
+    },
+    {
+        "id": "led_baandsliber",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse state → GPIO 6",
+        "func": "const state = msg.payload.toString().toLowerCase();\nmsg.payload = (state === 'open') ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 380,
+        "wires": [
+            [
+                "gpio_6"
+            ]
+        ]
+    },
+    {
+        "id": "led_vacuum",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse status → GPIO 12",
+        "func": "// Tænd LED hvis vacuum kører (payload = 1)\nconst active = parseInt(msg.payload);\nmsg.payload = (active === 1) ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "gpio_21",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 21 (rundsav)",
+        "pin": "21",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 640,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "gpio_26",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 26 (disponibel 1)",
+        "pin": "26",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 650,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "gpio_16",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 16 (lille_cnc)",
+        "pin": "16",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 630,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "gpio_13",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 13 (stor_cnc)",
+        "pin": "13",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 630,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "gpio_19",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 19 (rondelsliber)",
+        "pin": "19",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 640,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "gpio_6",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 6 (baandsliber)",
+        "pin": "6",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 620,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "mqtt_disponibel_2_active",
+        "type": "mqtt in",
+        "z": "gate_status_leds_flow",
+        "name": "disponibel_2 active",
+        "topic": "spansug/vacuum/disponibel_2/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": null,
+        "x": 120,
+        "y": 500,
+        "wires": [
+            [
+                "led_disponibel_2_active"
+            ]
+        ]
+    },
+    {
+        "id": "led_disponibel_2_active",
+        "type": "function",
+        "z": "gate_status_leds_flow",
+        "name": "Parse status → GPIO 11 LED",
+        "func": "const active = parseInt(msg.payload);\nmsg.payload = (active === 1) ? 1 : 0;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "gpio_11",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 11 (disponibel 2)",
+        "pin": "11",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 640,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "gpio_20",
+        "type": "rpi-gpio out",
+        "z": "gate_status_leds_flow",
+        "name": "GPIO 12 (vacuum)",
+        "pin": "12",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 620,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_baandsliber",
+        "type": "mqtt in",
+        "z": "baandsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/baandsliber/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 240,
+        "y": 320,
+        "wires": [
+            [
+                "switch_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "switch_baandsliber",
+        "type": "switch",
+        "z": "baandsliber_flow",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "change_open_baandsliber"
+            ],
+            [
+                "change_wait_baandsliber",
+                "function_delay_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_open_baandsliber",
+        "type": "change",
+        "z": "baandsliber_flow",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_open_baandsliber",
+                "change_reset_timer_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_close_baandsliber",
+        "type": "change",
+        "z": "baandsliber_flow",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_close_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "inject_delay_baandsliber",
+        "type": "inject",
+        "z": "baandsliber_flow",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "20",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "change_store_delay_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_store_delay_baandsliber",
+        "type": "change",
+        "z": "baandsliber_flow",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_delay_baandsliber",
+        "type": "function",
+        "z": "baandsliber_flow",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 20);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "delay_baandsliber",
+        "type": "delay",
+        "z": "baandsliber_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "change_close_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_close_baandsliber",
+        "type": "mqtt out",
+        "z": "baandsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/baandsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_open_baandsliber",
+        "type": "mqtt out",
+        "z": "baandsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/baandsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "change_reset_timer_baandsliber",
+        "type": "change",
+        "z": "baandsliber_flow",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "change_wait_baandsliber",
+        "type": "change",
+        "z": "baandsliber_flow",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_wait_baandsliber"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_wait_baandsliber",
+        "type": "mqtt out",
+        "z": "baandsliber_flow",
+        "name": "",
+        "topic": "spansug/gate/baandsliber/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_disponibel_1",
+        "type": "mqtt in",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_1/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "switch_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "switch_disponibel_1",
+        "type": "switch",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "change_open_disponibel_1"
+            ],
+            [
+                "change_wait_disponibel_1",
+                "function_delay_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "change_open_disponibel_1",
+        "type": "change",
+        "z": "disponibel_1_flow",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_open_disponibel_1",
+                "change_reset_timer_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "change_close_disponibel_1",
+        "type": "change",
+        "z": "disponibel_1_flow",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_close_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "inject_delay_disponibel_1",
+        "type": "inject",
+        "z": "disponibel_1_flow",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "change_store_delay_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "change_store_delay_disponibel_1",
+        "type": "change",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_delay_disponibel_1",
+        "type": "function",
+        "z": "disponibel_1_flow",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "delay_disponibel_1",
+        "type": "delay",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "change_close_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_close_disponibel_1",
+        "type": "mqtt out",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_1/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_open_disponibel_1",
+        "type": "mqtt out",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_1/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "change_reset_timer_disponibel_1",
+        "type": "change",
+        "z": "disponibel_1_flow",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "change_wait_disponibel_1",
+        "type": "change",
+        "z": "disponibel_1_flow",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_wait_disponibel_1"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_wait_disponibel_1",
+        "type": "mqtt out",
+        "z": "disponibel_1_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_1/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_disponibel_2",
+        "type": "mqtt in",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_2/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "switch_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "switch_disponibel_2",
+        "type": "switch",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "change_open_disponibel_2"
+            ],
+            [
+                "change_wait_disponibel_2",
+                "function_delay_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "change_open_disponibel_2",
+        "type": "change",
+        "z": "disponibel_2_flow",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_open_disponibel_2",
+                "change_reset_timer_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "change_close_disponibel_2",
+        "type": "change",
+        "z": "disponibel_2_flow",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_close_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "inject_delay_disponibel_2",
+        "type": "inject",
+        "z": "disponibel_2_flow",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "change_store_delay_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "change_store_delay_disponibel_2",
+        "type": "change",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_delay_disponibel_2",
+        "type": "function",
+        "z": "disponibel_2_flow",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "delay_disponibel_2",
+        "type": "delay",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "change_close_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_close_disponibel_2",
+        "type": "mqtt out",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_2/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_open_disponibel_2",
+        "type": "mqtt out",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_2/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "change_reset_timer_disponibel_2",
+        "type": "change",
+        "z": "disponibel_2_flow",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "change_wait_disponibel_2",
+        "type": "change",
+        "z": "disponibel_2_flow",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_wait_disponibel_2"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_wait_disponibel_2",
+        "type": "mqtt out",
+        "z": "disponibel_2_flow",
+        "name": "",
+        "topic": "spansug/gate/disponibel_2/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_lille_cnc",
+        "type": "mqtt in",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "topic": "spansug/gate/lille_cnc/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "switch_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "switch_lille_cnc",
+        "type": "switch",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "open_lille_cnc"
+            ],
+            [
+                "wait_lille_cnc",
+                "function_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "open_lille_cnc",
+        "type": "change",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_lille_cnc_open",
+                "reset_timer_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "close_lille_cnc",
+        "type": "change",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_lille_cnc_close"
+            ]
+        ]
+    },
+    {
+        "id": "inject_lille_cnc",
+        "type": "inject",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "set_delay_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "set_delay_lille_cnc",
+        "type": "change",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_lille_cnc",
+        "type": "function",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "delay_lille_cnc",
+        "type": "delay",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "close_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_lille_cnc_close",
+        "type": "mqtt out",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "topic": "spansug/gate/lille_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_lille_cnc_open",
+        "type": "mqtt out",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "topic": "spansug/gate/lille_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "reset_timer_lille_cnc",
+        "type": "change",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_lille_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "wait_lille_cnc",
+        "type": "change",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_lille_cnc_wait"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_lille_cnc_wait",
+        "type": "mqtt out",
+        "z": "b2c3d4e5f6g7h8i9",
+        "name": "",
+        "topic": "spansug/gate/lille_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_rundsav",
+        "type": "mqtt in",
+        "z": "rundsav_flow",
+        "name": "",
+        "topic": "spansug/gate/rundsav/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "switch_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "switch_rundsav",
+        "type": "switch",
+        "z": "rundsav_flow",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "change_open_rundsav"
+            ],
+            [
+                "change_wait_rundsav",
+                "function_delay_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "change_open_rundsav",
+        "type": "change",
+        "z": "rundsav_flow",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_open_rundsav",
+                "change_reset_timer_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "change_close_rundsav",
+        "type": "change",
+        "z": "rundsav_flow",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_close_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "inject_delay_rundsav",
+        "type": "inject",
+        "z": "rundsav_flow",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "change_store_delay_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "change_store_delay_rundsav",
+        "type": "change",
+        "z": "rundsav_flow",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_delay_rundsav",
+        "type": "function",
+        "z": "rundsav_flow",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "delay_rundsav",
+        "type": "delay",
+        "z": "rundsav_flow",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "change_close_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_close_rundsav",
+        "type": "mqtt out",
+        "z": "rundsav_flow",
+        "name": "",
+        "topic": "spansug/gate/rundsav/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_open_rundsav",
+        "type": "mqtt out",
+        "z": "rundsav_flow",
+        "name": "",
+        "topic": "spansug/gate/rundsav/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "change_reset_timer_rundsav",
+        "type": "change",
+        "z": "rundsav_flow",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "change_wait_rundsav",
+        "type": "change",
+        "z": "rundsav_flow",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_wait_rundsav"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_wait_rundsav",
+        "type": "mqtt out",
+        "z": "rundsav_flow",
+        "name": "",
+        "topic": "spansug/gate/rundsav/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_in_stor_cnc",
+        "type": "mqtt in",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "topic": "spansug/gate/stor_cnc/machine_active",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 250,
+        "y": 320,
+        "wires": [
+            [
+                "switch_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "switch_stor_cnc",
+        "type": "switch",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 320,
+        "wires": [
+            [
+                "open_stor_cnc"
+            ],
+            [
+                "wait_stor_cnc",
+                "function_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "open_stor_cnc",
+        "type": "change",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "OPEN",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OPEN",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "mqtt_out_stor_cnc_open",
+                "reset_timer_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "close_stor_cnc",
+        "type": "change",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "CLOSE",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CLOSE",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1180,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_stor_cnc_close"
+            ]
+        ]
+    },
+    {
+        "id": "inject_stor_cnc",
+        "type": "inject",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "Lukke-delay (sek)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "30",
+        "payloadType": "num",
+        "x": 210,
+        "y": 140,
+        "wires": [
+            [
+                "set_delay_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "set_delay_stor_cnc",
+        "type": "change",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lukke_delay",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "function_stor_cnc",
+        "type": "function",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "function 1",
+        "func": "const s = Number(flow.get(\"lukke_delay\") || 30);\nmsg.delay = s * 1000;   // Delay-node bruger millisekunder\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 340,
+        "wires": [
+            [
+                "delay_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "delay_stor_cnc",
+        "type": "delay",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "pauseType": "delayv",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            [
+                "close_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_stor_cnc_close",
+        "type": "mqtt out",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "topic": "spansug/gate/stor_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 1410,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_stor_cnc_open",
+        "type": "mqtt out",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "topic": "spansug/gate/stor_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 930,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "reset_timer_stor_cnc",
+        "type": "change",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "Reset lukke-timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 260,
+        "wires": [
+            [
+                "delay_stor_cnc"
+            ]
+        ]
+    },
+    {
+        "id": "wait_stor_cnc",
+        "type": "change",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "WAIT",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WAIT",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt_out_stor_cnc_wait"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_stor_cnc_wait",
+        "type": "mqtt out",
+        "z": "a1b2c3d4e5f6g7h8",
+        "name": "",
+        "topic": "spansug/gate/stor_cnc/cmd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "mqtt_out_cmd",
+        "type": "mqtt out",
+        "z": "tab1",
+        "name": "MQTT cmd",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt_broker1",
+        "x": 420,
+        "y": 130,
+        "wires": []
+    },
+    {
+        "id": "btn_on",
+        "type": "ui_button",
+        "z": "tab1",
+        "name": "Relay ON",
+        "group": "ui_group1",
+        "order": 1,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Tænd relæ",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "green",
+        "className": "",
+        "icon": "power",
+        "payload": "ON",
+        "payloadType": "str",
+        "topic": "spansug/relay/cmd",
+        "topicType": "str",
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "mqtt_out_cmd"
+            ]
+        ]
+    },
+    {
+        "id": "btn_off",
+        "type": "ui_button",
+        "z": "tab1",
+        "name": "Relay OFF",
+        "group": "ui_group1",
+        "order": 2,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Sluk relæ",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "red",
+        "icon": "power_off",
+        "payload": "OFF",
+        "payloadType": "str",
+        "topic": "spansug/relay/cmd",
+        "x": 160,
+        "y": 160,
+        "wires": [
+            [
+                "mqtt_out_cmd"
+            ]
+        ]
+    },
+    {
+        "id": "bdfa65d68aa1e0c1",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "🔧 Debug: Simuler maskine aktiv/inaktiv",
+        "info": "Brug disse knapper til at simulere at en ESP32 sender machine_active beskeder.\n\nKlik på inject-noderne for at sende \"1\" (aktiv) eller \"0\" (inaktiv).",
+        "x": 240,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "98f4ceed9b8a5d46",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "--- Lille CNC ---",
+        "info": "",
+        "x": 120,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "d3e1d14a36be7809",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Rondelsliber: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 160,
+        "y": 140,
+        "wires": [
+            [
+                "d8b3a1fbf37fcdce"
+            ]
+        ]
+    },
+    {
+        "id": "a3214062a7e38a21",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Rondelsliber: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "d8b3a1fbf37fcdce"
+            ]
+        ]
+    },
+    {
+        "id": "d8b3a1fbf37fcdce",
+        "type": "mqtt out",
+        "z": "fc26bf8841cd2248",
+        "name": "→ rondelsliber/machine_active",
+        "topic": "spansug/gate/rondelsliber/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 440,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "99332433dac03fa9",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "--- Stor CNC ---",
+        "info": "",
+        "x": 120,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "4337a3102eed3262",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Stor CNC: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 150,
+        "y": 280,
+        "wires": [
+            [
+                "5f07c9b544a825c1"
+            ]
+        ]
+    },
+    {
+        "id": "fe94f487660c9b9c",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Stor CNC: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "5f07c9b544a825c1"
+            ]
+        ]
+    },
+    {
+        "id": "5f07c9b544a825c1",
+        "type": "mqtt out",
+        "z": "fc26bf8841cd2248",
+        "name": "→ stor_cnc/machine_active",
+        "topic": "spansug/gate/stor_cnc/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 430,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "5f92d80c0ccefddd",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "--- Båndsliber ---",
+        "info": "",
+        "x": 120,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "67f8bf9c81e9cad9",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Båndsliber: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 160,
+        "y": 420,
+        "wires": [
+            [
+                "a3d48cb5d6987524"
+            ]
+        ]
+    },
+    {
+        "id": "a7a34113443bc4b8",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Båndsliber: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 170,
+        "y": 460,
+        "wires": [
+            [
+                "a3d48cb5d6987524"
+            ]
+        ]
+    },
+    {
+        "id": "a3d48cb5d6987524",
+        "type": "mqtt out",
+        "z": "fc26bf8841cd2248",
+        "name": "→ baandsliber/machine_active",
+        "topic": "spansug/gate/baandsliber/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 440,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "f7cb37e7746b4e8a",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "--- Rundsav ---",
+        "info": "",
+        "x": 120,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "747e88647ddc6dcd",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Rundsav: AKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "c59efb54b59d7707"
+            ]
+        ]
+    },
+    {
+        "id": "da45a0d5b28e5c12",
+        "type": "inject",
+        "z": "fc26bf8841cd2248",
+        "name": "Rundsav: INAKTIV",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "str",
+        "x": 160,
+        "y": 600,
+        "wires": [
+            [
+                "c59efb54b59d7707"
+            ]
+        ]
+    },
+    {
+        "id": "c59efb54b59d7707",
+        "type": "mqtt out",
+        "z": "fc26bf8841cd2248",
+        "name": "→ rundsav/machine_active",
+        "topic": "spansug/gate/rundsav/machine_active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "675a7eb26a300987",
+        "x": 430,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "ef9dad0d71bddb5d",
+        "type": "comment",
+        "z": "fc26bf8841cd2248",
+        "name": "--- Debug output ---",
+        "info": "",
+        "x": 660,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "50d55b6086f868ac",
+        "type": "mqtt in",
+        "z": "fc26bf8841cd2248",
+        "name": "Alle machine_active",
+        "topic": "spansug/gate/+/machine_active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 680,
+        "y": 160,
+        "wires": [
+            [
+                "ec214e8a2722b6ec"
+            ]
+        ]
+    },
+    {
+        "id": "ec214e8a2722b6ec",
+        "type": "debug",
+        "z": "fc26bf8841cd2248",
+        "name": "machine_active",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 900,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "4745ddf1a7f68344",
+        "type": "mqtt in",
+        "z": "fc26bf8841cd2248",
+        "name": "Alle gate cmd",
+        "topic": "spansug/gate/+/cmd",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 220,
+        "wires": [
+            [
+                "bc37ac69e963473e"
+            ]
+        ]
+    },
+    {
+        "id": "bc37ac69e963473e",
+        "type": "debug",
+        "z": "fc26bf8841cd2248",
+        "name": "gate cmd",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 880,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "8f84d706c171172d",
+        "type": "mqtt in",
+        "z": "fc26bf8841cd2248",
+        "name": "Alle gate state",
+        "topic": "spansug/gate/+/state",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 280,
+        "wires": [
+            [
+                "eea529c7a606962a"
+            ]
+        ]
+    },
+    {
+        "id": "eea529c7a606962a",
+        "type": "debug",
+        "z": "fc26bf8841cd2248",
+        "name": "gate state",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 880,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "94df2894b4944ca4",
+        "type": "mqtt in",
+        "z": "fc26bf8841cd2248",
+        "name": "Vacuum status",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 660,
+        "y": 340,
+        "wires": [
+            [
+                "5b9587bd90f815bb"
+            ]
+        ]
+    },
+    {
+        "id": "5b9587bd90f815bb",
+        "type": "debug",
+        "z": "fc26bf8841cd2248",
+        "name": "vacuum",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 870,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "logger_mqtt_machine",
+        "type": "mqtt in",
+        "z": "spansug_logger_flow",
+        "name": "Machine Active",
+        "topic": "spansug/gate/+/machine_active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "logger_track_machines"
+            ]
+        ]
+    },
+    {
+        "id": "logger_track_machines",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Track Machine States",
+        "func": "// Gate name mapping\nconst GATE_NAMES = {\n    'stor_cnc': 'Stor CNC',\n    'lille_cnc': 'Lille CNC',\n    'rundsav': 'Rundsav',\n    'disponibel_1': 'Disponibel 1',\n    'disponibel_2': 'Disponibel 2',\n    'rondelsliber': 'Rondelsliber',\n    'baandsliber': 'Båndsliber'\n};\n\n// Get gate ID from topic\nconst parts = msg.topic.split('/');\nconst gateId = parts[2];\nconst isActive = msg.payload === '1';\n\n// Store in flow context\nlet machines = flow.get('activeMachines') || {};\nmachines[gateId] = isActive;\nflow.set('activeMachines', machines);\n\n// Store name mapping\nflow.set('gateNames', GATE_NAMES);\n\nreturn null;",
+        "outputs": 0,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "logger_mqtt_vacuum",
+        "type": "mqtt in",
+        "z": "spansug_logger_flow",
+        "name": "Vacuum Active",
+        "topic": "spansug/vacuum/active",
+        "qos": "1",
+        "datatype": "utf8",
+        "broker": "675a7eb26a300987",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 200,
+        "wires": [
+            [
+                "logger_vacuum_change"
+            ]
+        ]
+    },
+    {
+        "id": "logger_vacuum_change",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Log Vacuum Change",
+        "func": "const isActive = msg.payload === '1';\nconst prevState = flow.get('vacuumState');\n\n// Skip if no change (including first retained message)\nif (prevState === isActive) {\n    return null;\n}\nflow.set('vacuumState', isActive);\n\n// Skip the very first message (retained) to avoid false log entry\nif (prevState === undefined) {\n    return null;\n}\n\n// Get active machines\nconst machines = flow.get('activeMachines') || {};\nconst GATE_NAMES = flow.get('gateNames') || {};\n\nconst activeMachines = [];\nfor (const [gateId, active] of Object.entries(machines)) {\n    if (active) {\n        activeMachines.push(GATE_NAMES[gateId] || gateId);\n    }\n}\n\nconst entry = {\n    timestamp: new Date().toISOString(),\n    vacuumActive: isActive,\n    activeMachines: activeMachines\n};\n\nmsg.payload = JSON.stringify(entry) + '\\n';\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 200,
+        "wires": [
+            [
+                "logger_file_append",
+                "logger_debug"
+            ]
+        ]
+    },
+    {
+        "id": "logger_file_append",
+        "type": "file",
+        "z": "spansug_logger_flow",
+        "name": "Append to log",
+        "filename": "/home/pi/spansug-vacuum-log.jsonl",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 660,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "logger_debug",
+        "type": "debug",
+        "z": "spansug_logger_flow",
+        "name": "Log Entry",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 650,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "logger_http_in",
+        "type": "http in",
+        "z": "spansug_logger_flow",
+        "name": "GET /api/spansug-log",
+        "url": "/api/spansug-log",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 360,
+        "wires": [
+            [
+                "logger_file_read"
+            ]
+        ]
+    },
+    {
+        "id": "logger_file_read",
+        "type": "file in",
+        "z": "spansug_logger_flow",
+        "name": "Read log file",
+        "filename": "/home/pi/spansug-vacuum-log.jsonl",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 410,
+        "y": 360,
+        "wires": [
+            [
+                "logger_parse_log"
+            ]
+        ]
+    },
+    {
+        "id": "logger_parse_log",
+        "type": "function",
+        "z": "spansug_logger_flow",
+        "name": "Parse & Format",
+        "func": "const data = msg.payload || '';\nconst lines = data.trim().split('\\n').filter(l => l.length > 0);\nconst entries = lines.map(line => {\n    try { return JSON.parse(line); }\n    catch(e) { return null; }\n}).filter(e => e !== null);\n\n// Return newest first\nentries.reverse();\nconst limit = parseInt((msg.req.query && msg.req.query.limit) || 200);\nmsg.payload = entries.slice(0, limit);\nmsg.headers = {\n    'Content-Type': 'application/json',\n    'Access-Control-Allow-Origin': '*'\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "logger_http_out"
+            ]
+        ]
+    },
+    {
+        "id": "logger_http_out",
+        "type": "http response",
+        "z": "spansug_logger_flow",
+        "name": "Response",
+        "statusCode": "200",
+        "headers": {},
+        "x": 640,
+        "y": 360,
+        "wires": []
+    }
+]

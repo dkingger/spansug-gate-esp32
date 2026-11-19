@@ -2,6 +2,8 @@
 # Deploy script til Raspberry Pi backend
 # Kører fra Mac/Linux til Raspberry Pi
 
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
+
 PI_HOST="spansug-backend.local"
 PI_USER="pi"
 
@@ -54,7 +56,7 @@ scp web/dashboard.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Kopier index.html fra data mappen
 echo -e "\nKopierer data filer..."
-scp data/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
+scp web/index.html ${PI_USER}@${PI_HOST}:~/spansug-backend/web/
 
 # Publicer web filer til Apache document root
 echo -e "\nPublicerer web filer til /var/www/html/..."
@@ -62,12 +64,12 @@ ssh ${PI_USER}@${PI_HOST} "sudo cp ~/spansug-backend/web/dashboard.html /var/www
 
 # Kopier debug script
 echo -e "\nKopierer debug script..."
-scp debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+scp scripts/debug-backend.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/debug-backend.sh"
 
 # Kopier installations script
 echo -e "\nKopierer installations script..."
-scp install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
+scp scripts/install-pi.sh ${PI_USER}@${PI_HOST}:~/spansug-backend/
 ssh ${PI_USER}@${PI_HOST} "chmod +x ~/spansug-backend/install-pi.sh"
 
 echo -e "\n=== Deploy færdig! ==="

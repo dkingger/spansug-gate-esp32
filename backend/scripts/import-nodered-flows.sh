@@ -4,8 +4,18 @@
 # Usage: bash import-nodered-flows.sh
 
 NODERED_DIR="$HOME/.node-red"
-FLOWS_JSON="$NODERED_DIR/flows.json"
-FLOWS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/node-red" && pwd)"
+PROJECT_DIR="$NODERED_DIR/projects/Spaansug"
+FLOWS_JSON="$PROJECT_DIR/flows.json"
+if [ ! -f "$PROJECT_DIR/package.json" ] || [ ! -f "$FLOWS_JSON" ]; then
+    echo "ERROR: Expected existing Spaansug project not found: $PROJECT_DIR"
+    exit 1
+fi
+PENDING_JSON=$(mktemp "$PROJECT_DIR/.flows-import.XXXXXX")
+trap 'rm -f "$PENDING_JSON"' EXIT
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FLOWS_DIR="$SCRIPT_DIR/../node-red"
+# Deployment copies scripts beside node-red on the Pi.
+if [ -d "$SCRIPT_DIR/node-red" ]; then FLOWS_DIR="$SCRIPT_DIR/node-red"; fi
 BACKUP_DIR="$NODERED_DIR/backups"
 
 echo "=================================="
@@ -45,7 +55,7 @@ fi
 
 # Use Python to merge all JSON files properly
 export FLOWS_DIR="$FLOWS_DIR"
-export FLOWS_JSON="$FLOWS_JSON"
+export FLOWS_JSON="$PENDING_JSON"
 python3 << 'PYTHON_SCRIPT'
 import json
 import os
@@ -89,8 +99,13 @@ fi
 
 echo ""
 echo "Stopping Node-RED..."
-sudo systemctl stop nodered
+sudo systemctl stop nodered || exit 1
 sleep 2
+
+if ! cp "$PENDING_JSON" "$FLOWS_JSON"; then
+    sudo systemctl start nodered
+    exit 1
+fi
 
 echo "Starting Node-RED..."
 sudo systemctl start nodered

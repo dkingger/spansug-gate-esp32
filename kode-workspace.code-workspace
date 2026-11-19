@@ -1,16 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "../../LEDstrip-tester"
-		},
-		{
-			"name": "LED scanner",
-			"path": "../LED scanner"
-		},
-		{
-			"name": "spansug-gate-esp32",
-			"path": "."
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "Sp\u00e5nsug \u2013 overblik",
+      "path": "."
+    },
+    {
+      "name": "ESP32 firmware",
+      "path": "firmware"
+    }
+  ],
+  "settings": {}
 }
